@@ -1,4 +1,7 @@
-/SeekFree_MM32F327X_G8P_Opensource_Library/*
-!/SeekFree_MM32F327X_G8P_Opensource_Library/project
-/SeekFree_MM32F327X_G8P_Opensource_Library/project/*
-!/SeekFree_MM32F327X_G8P_Opensource_Library/project/code
+/SMARTCAR/*
+/Example/*
+/vscode/*
+!/SMARTCAR/project
+/SMARTCAR/project/*
+!/SMARTCAR/project/code
+!/SMARTCAR/project/user
