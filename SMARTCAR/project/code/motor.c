@@ -23,33 +23,41 @@ void motor_init(void)
 
 /**
   * @brief  设置左右电机占空比和方向
-  * @param  motor_left  左电机占空比（-MAX_DUTY ~ MAX_DUTY，正负表示方向）
-  * @param  motor_right 右电机占空比（-MAX_DUTY ~ MAX_DUTY，正负表示方向）
+  * @param  motor_left  左电机占空比（-MAX_DUTY ~ MAX_DUTY，正负表示方向，范围-1000到+1000）
+  * @param  motor_right 右电机占空比（-MAX_DUTY ~ MAX_DUTY，正负表示方向，范围-1000到+1000）
   */
 void motor_set_duty(int8 motor_left, int8 motor_right)
 {
     // 左电机
+    //输出限幅
+    if(motor_left>1000)motor_left=1000;
+    else if(motor_left<-1000)motor_left=-1000;
+    
     if(motor_left >= 0)
     {
         gpio_set_level(DIR_L, GPIO_HIGH);                                       // 正转
-        pwm_set_duty(PWM_L, motor_left * (PWM_DUTY_MAX / 100));
+        pwm_set_duty(PWM_L, motor_left * (PWM_DUTY_MAX / 1000));
     }
     else
     {
         gpio_set_level(DIR_L, GPIO_LOW);                                        // 反转
-        pwm_set_duty(PWM_L, (-motor_left) * (PWM_DUTY_MAX / 100));
+        pwm_set_duty(PWM_L, (-motor_left) * (PWM_DUTY_MAX / 1000));
     }
 
     // 右电机
+    // 输出限幅
+    if(motor_right>1000)motor_right=1000;
+    else if(motor_right<-1000)motor_right=-1000;
+
     if(motor_right >= 0)
     {
         gpio_set_level(DIR_R, GPIO_HIGH);                                       // 正转
-        pwm_set_duty(PWM_R, motor_right * (PWM_DUTY_MAX / 100));
+        pwm_set_duty(PWM_R, motor_right * (PWM_DUTY_MAX / 1000));
     }
     else
     {
         gpio_set_level(DIR_R, GPIO_LOW);                                        // 反转
-        pwm_set_duty(PWM_R, (-motor_right) * (PWM_DUTY_MAX / 100));
+        pwm_set_duty(PWM_R, (-motor_right) * (PWM_DUTY_MAX / 1000));
     }
 }
 
