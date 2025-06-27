@@ -1,7 +1,9 @@
 /SMARTCAR/*
 /Example/*
-.vscode/
+/demo/*
+/.vscode/*
 !/SMARTCAR/project
 /SMARTCAR/project/*
 !/SMARTCAR/project/code
 !/SMARTCAR/project/user
+

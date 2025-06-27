@@ -1,5 +1,5 @@
-#ifndef _IMAGE_H
-#define _IMAGE_H
+#ifndef _PID_H
+#define _PID_H
 
 #include "zf_common_headfile.h"
 
