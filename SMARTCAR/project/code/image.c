@@ -20,6 +20,10 @@ uint8 right_lost_flag[MT9V03X_H];//右丢线数组
 uint8 left_lost_count;//左丢线计数
 uint8 right_lost_count;//右丢线计数
 uint8 left_right_lost_count;//左右同时丢线计数
+uint8 left_down_point;//左下拐点
+uint8 left_up_point;//左上拐点
+uint8 right_down_point;//右下拐点
+uint8 right_up_point;//右上拐点
 
 
 
@@ -234,7 +238,7 @@ void longest_white_sweep_line(uint8 image[DEAL_IMAGE_H][DEAL_IMAGE_W])
         if( longest_white_left[0] < white_count[i])//找最长的那一列，寻到右边界
         {
             longest_white_left[0] = white_count[i];
-            longest_white_left[1] = white_count[i];
+            longest_white_left[1] = i;
         }
     }
     //寻找右最长白列
@@ -243,11 +247,11 @@ void longest_white_sweep_line(uint8 image[DEAL_IMAGE_H][DEAL_IMAGE_W])
         if( longest_white_right[0] < white_count[i])//找最长的那一列
         {
             longest_white_right[0] = white_count[i];
-            longest_white_right[1] = white_count[i];
+            longest_white_right[1] = i;
         }
     }
     
-    search_stop_line = longest_white_left[0];//非常重要，搜索截止行存储
+    search_stop_line = (longest_white_left[0]>longest_white_right[0])?longest_white_left[0]:longest_white_right[0];//非常重要，搜索截止行存储
 
     //巡线
     for(i = DEAL_IMAGE_H-1;i>=DEAL_IMAGE_H-search_stop_line;i--)
@@ -287,10 +291,57 @@ void longest_white_sweep_line(uint8 image[DEAL_IMAGE_H][DEAL_IMAGE_W])
         
     }
     //记录丢边情况
-    for(i=DEAL_IMAGE_H-1;i>=0;i--)
+    for(i=DEAL_IMAGE_H-1;i>=DEAL_IMAGE_H-search_stop_line;i--)
     {
         if(left_lost_flag[i]==1&&right_lost_flag[i]==0)left_lost_count++;//左丢
         if(left_lost_flag[i]==0&&right_lost_flag[i]==1)right_lost_count++;//右丢
         if(left_lost_flag[i]==1&&right_lost_flag[i]==1)left_right_lost_count++;//丢双边
     }
 }
+
+/**
+*
+* @brief  找下拐点
+* @param  start_point 搜索起点 
+* @param  end_point    搜索终点
+* @retval 0:无下拐点，1:有下拐点
+**/
+
+uint8 find_down_point(uint8 start_point,uint8 end_point)
+{
+    //参数清零
+    left_down_point=0;
+    right_down_point=0;
+    for(int i=start_point;i>=end_point;i--)
+    {
+        //点i下面2个连续相差不大并且点i与上面边3个点分别相差很大，认为有下左拐点
+        if(left_down_point==0&&
+            abs(left_line[i]-left_line[i+1])<=5&&
+            abs(left_line[i+1]-left_line[i+2])<=5&&
+            abs(left_line[i+2]-left_line[i+3])<=5&&
+            (left_line[i]-left_line[i-2])>=5&&
+            (left_line[i]-left_line[i-3])>=10&&
+            (left_line[i]-left_line[i-4])>=10)
+            {
+                left_down_point=i;
+            }
+        if(right_down_point==0&&
+            abs(right_line[i]-right_line[i+1])<=5&&
+            abs(right_line[i+1]-right_line[i+2])<=5&&
+            abs(right_line[i+2]-right_line[i+3])<=5&&
+            (right_line[i]-right_line[i-2])<=-5&&
+            (right_line[i]-right_line[i-3])<=-10&&
+            (right_line[i]-right_line[i-4])<=-10)
+            {
+                right_down_point=i;
+            }
+        if(left_down_point!=0&&right_down_point!=0)
+        {
+            break;
+        }       
+    }
+    if(left_down_point!=0&&right_down_point!=0)return 1;
+    else return 0;
+}
+
+
