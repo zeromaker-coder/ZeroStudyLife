@@ -167,8 +167,8 @@ void Sec_Menu_01(void)
     char gyro_p_str[50];
     char gyro_i_str[50];
 
-    sprintf(gyro_p_str, "gyro_p: %.2f", pid_param.gyro_kp); //格式化角速度环kp
-    sprintf(gyro_i_str, "gyro_i: %.2f", pid_param.gyro_ki); //格式化角速度环ki
+    sprintf(gyro_p_str, "gyro_p: %.2f", gyro_pid_param.kp); //格式化角速度环kp
+    sprintf(gyro_i_str, "gyro_i: %.2f", gyro_pid_param.ki); //格式化角速度环ki
 
     ips200_show_string(60,0,"gyro_pid");//二级菜单标题
     ips200_show_string(16,30,gyro_p_str);//角速度环kp
@@ -214,13 +214,13 @@ void Sec_Menu_01(void)
     {
         if( KEY_SHORT_PRESS == key_get_state(KEY_3))
         {
-            pid_param.gyro_kp += 0.1f; //增加角速度环kp
+            gyro_pid_param.kp+= 0.1f; //增加角速度环kp
             key_clear_state(KEY_3); //清除按键状态
             ips200_clear();//清屏
         }
         else if(KEY_SHORT_PRESS == key_get_state(KEY_4))
         {
-            pid_param.gyro_kp -= 0.1f; //增加角速度环kp
+            gyro_pid_param.kp-= 0.1f; //增加角速度环kp
             key_clear_state(KEY_4); //清除按键状态
             ips200_clear();//清屏
         }
@@ -231,13 +231,13 @@ void Sec_Menu_01(void)
     {
         if( KEY_SHORT_PRESS == key_get_state(KEY_3))
         {
-            pid_param.gyro_ki += 0.1f; //增加角速度环kp
+            gyro_pid_param.ki+= 0.1f; //增加角速度环kp
             key_clear_state(KEY_3); //清除按键状态
             ips200_clear();//清屏
         }
         else if(KEY_SHORT_PRESS == key_get_state(KEY_4))
         {
-            pid_param.gyro_ki -= 0.1f; //增加角速度环kp
+            gyro_pid_param.ki-= 0.1f; //增加角速度环kp
             key_clear_state(KEY_4); //清除按键状态
             ips200_clear();//清屏
         }

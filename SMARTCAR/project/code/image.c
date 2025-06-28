@@ -355,7 +355,7 @@ void find_down_point(uint8 start_point,uint8 end_point)
 * @param  start_point 搜索起点 
 * @param  end_point    搜索终点
 **/
-uint8 find_up_point(uint8 start_point,uint8 end_point)
+void find_up_point(uint8 start_point,uint8 end_point)
 {
     left_up_point=0;
     right_up_point=0;

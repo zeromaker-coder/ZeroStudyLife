@@ -2,31 +2,25 @@
 #define _PID_H
 
 #include "zf_common_headfile.h"
-typedef struct {
-    float gyro_kp;
-    float gyro_ki;
 
-    float angle_kp;
-    float angle_kd;
-    
-    float speed_kp;
-    float speed_ki;    
-    
-    float turn_kp;
-    float turn_kp2;
-    float turn_kd;
-    float turn_kd2;
 
-    float gyro_i_out_limit;
-    float gyro_out_limit;
+typedef struct
+{
+  float kp;                     
+  float ki;                       
+  float kd;                       
+  float ek;                      
+  float ek1;                      
+  float ek2;                      
+  float location_sum;            
+  float out;
+  float PID_I_LIMIT_MAX;
+  float PID_OUT_LIMIT_MAX;											
+}PID_LocTypeDef;
 
-    float angle_out_limit;
-    
-    float speed_i_out_limit;
-    float speed_out_limit;
+extern PID_LocTypeDef gyro_pid_param;
+extern PID_LocTypeDef angle_pid_param;
+extern PID_LocTypeDef speed_pid_param;
 
-}pid_typedef;
-
-extern pid_typedef pid_param;
 
 #endif
