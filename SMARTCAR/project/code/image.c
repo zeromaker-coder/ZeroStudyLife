@@ -34,7 +34,7 @@ uint8 right_up_point;//右上拐点
 * @param   *in_image  原始图像
 * @retval   0:正常 1:出界
 */
-void image_out_of_bounds(unsigned char in_image[DEAL_IMAGE_H][DEAL_IMAGE_W])
+uint8 image_out_of_bounds(unsigned char in_image[DEAL_IMAGE_H][DEAL_IMAGE_W])
 {
     int sum=0;
     for(int i=0;i<10;i++)
@@ -306,7 +306,7 @@ void longest_white_sweep_line(uint8 image[DEAL_IMAGE_H][DEAL_IMAGE_W])
 * @param  end_point    搜索终点
 **/
 
-find_down_point(uint8 start_point,uint8 end_point)
+void find_down_point(uint8 start_point,uint8 end_point)
 {
     //参数清零
     left_down_point=0;
