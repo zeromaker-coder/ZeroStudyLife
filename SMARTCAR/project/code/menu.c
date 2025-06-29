@@ -1,5 +1,6 @@
 #include "menu.h"
 #include "pid.h"
+#include "flash.h"
 
 #define IPS200_TYPE     (IPS200_TYPE_PARALLEL8)                                 // 双排排针 并口两寸屏 这里宏定义填写 IPS200_TYPE_PARALLEL8
                                                                                 // 单排排针 SPI 两寸屏 这里宏定义填写 IPS200_TYPE_SPI
@@ -8,32 +9,7 @@ uint8 main_menu_item;//主菜单指针
 uint8 sec_menu_item;//副菜单指针
 uint8 car_go;//小车发车
 
-/**
-* @brief  菜单参数保存
-* @param   无
-*/
-void menu_save(void)
-{
-    ;
-}
 
-/**
-* @brief  调好的pid参数保存
-* @param   无
-*/
-void pid_save(void)
-{
-    ;
-}
-
-/**
-* @brief  调好的pid参数读出
-* @param   无
-*/
-void pid_load(void)
-{
-    ;
-}
 
 /**
 * @brief  初始化菜单,初始化IPS200显示屏
@@ -141,12 +117,14 @@ void main_menu(void)
             case 7:
                 // 保存参数
                 ips200_show_string(60, 160, "Param Saved!");
+                menu_save();
                 system_delay_ms(200);
                 ips200_clear();
                 break;
             case 8:
                 // 载入参数
                 ips200_show_string(60, 160, "Param Loaded!");
+                menu_load();
                 system_delay_ms(200);
                 ips200_clear();
                 break;

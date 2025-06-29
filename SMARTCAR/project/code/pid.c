@@ -4,18 +4,23 @@
 PID_LocTypeDef gyro_pid_param;//角速度环结构体
 PID_LocTypeDef angle_pid_param;//角度环结构体
 PID_LocTypeDef speed_pid_param;//速度环结构体
+Turn_PPDD_LocTypeDef turn_pid_param;//转向环结构体
+USER_PARAM_LocTypeDef user_param;//常用参数
 
 //定义结构体指针
-PID_LocTypeDef gyro_pid;//角速度环结构体指针
-PID_LocTypeDef angle_pid;//角度环结构体指针
-PID_LocTypeDef speed_pid;//速度环结构体指针
+PID_LocTypeDef* gyro_pid_pin;//角速度环结构体指针
+PID_LocTypeDef* angle_pid_pin;//角度环结构体指针
+PID_LocTypeDef* speed_pid_pin;//速度环结构体指针
+Turn_PPDD_LocTypeDef* turn_pid_pin;//转向环结构体指针
+USER_PARAM_LocTypeDef* user_param_pin;//常用参数
+
+
 
 //定义中间变量
 float gyro_pid_out;//角速度环输出
 float angle_pid_out;//角度环输出
 float speed_pid_out;//速度环输出
 
-float mid_angle;//机械中值
 
 
 
@@ -43,6 +48,12 @@ void pid_init(void)
     speed_pid_param.kd=0.0;
     speed_pid_param.PID_I_LIMIT_MAX=0.0;
     speed_pid_param.PID_OUT_LIMIT_MAX=0.0;
+    //转向环参数初始化
+    turn_pid_param.kp=0.0;
+    turn_pid_param.kp2=0.0;
+    turn_pid_param.kd=0.0;
+    turn_pid_param.kd2=0.0;
+    turn_pid_param.PID_OUT_LIMIT_MAX=0.0;
 }
 
 
@@ -83,7 +94,7 @@ float PID_D_Pre_location(float setvalue, float actualvalue, float GY ,PID_LocTyp
 	if((PID->ki!=0)&&(PID->location_sum*PID->ki>PID->PID_I_LIMIT_MAX)) PID->location_sum=PID->PID_I_LIMIT_MAX;
 	if((PID->ki!=0)&&(PID->location_sum*PID->ki<-PID->PID_I_LIMIT_MAX)) PID->location_sum=-PID->PID_I_LIMIT_MAX;
 	//out计算
-    PID->out=PID->kp*PID->ek+(PID->ki*PID->location_sum)+PID->kd*GY;
+    PID->out=PID->kp*PID->ek+(PID->ki*PID->location_sum)+PID->kd*GY;//极性调整处
     //PID限幅
 	if(PID->out<-PID->PID_OUT_LIMIT_MAX)PID->out=-PID->PID_OUT_LIMIT_MAX;
 	if(PID->out>PID->PID_OUT_LIMIT_MAX)PID->out=PID->PID_OUT_LIMIT_MAX;
@@ -91,10 +102,7 @@ float PID_D_Pre_location(float setvalue, float actualvalue, float GY ,PID_LocTyp
 	return PID->out;
 }
 
-/**
-* @brief  角速度环
-* @param  无
-*/
+
 
 
 
