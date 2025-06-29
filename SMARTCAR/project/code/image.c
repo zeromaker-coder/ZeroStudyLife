@@ -25,6 +25,18 @@ uint8 left_up_point;//左上拐点
 uint8 right_down_point;//右下拐点
 uint8 right_up_point;//右上拐点
 
+//误差权重数组(后期使用)
+const uint8 weight[DEAL_IMAGE_H]= 
+{
+    0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0
+};
+
 
 
 
@@ -193,10 +205,12 @@ void image_draw_black(unsigned char image[DEAL_IMAGE_H][DEAL_IMAGE_W])
 }
 
 
+
+
 /**
 *
 * @brief  图像扫线，根据网上的教程选用双最长白列
-* @param  
+* @param  image 图像数组
 *
 **/
 void longest_white_sweep_line(uint8 image[DEAL_IMAGE_H][DEAL_IMAGE_W])
@@ -233,7 +247,7 @@ void longest_white_sweep_line(uint8 image[DEAL_IMAGE_H][DEAL_IMAGE_W])
         }
     }
     //寻找左最长白列
-    for(i=start_point;i<end_point;i++)
+    for(i=start_point;i<end_point;i+=2)
     {
         if( longest_white_left[0] < white_count[i])//找最长的那一列，寻到右边界
         {
@@ -242,7 +256,7 @@ void longest_white_sweep_line(uint8 image[DEAL_IMAGE_H][DEAL_IMAGE_W])
         }
     }
     //寻找右最长白列
-    for(i=end_point;i>=longest_white_left[1];i--)//从右往左，找到右最长白列，寻到左边最长白列位置
+    for(i=end_point;i>=longest_white_left[1];i-=2)//从右往左，找到右最长白列，寻到左边最长白列位置
     {
         if( longest_white_right[0] < white_count[i])//找最长的那一列
         {
@@ -296,6 +310,137 @@ void longest_white_sweep_line(uint8 image[DEAL_IMAGE_H][DEAL_IMAGE_W])
         if(left_lost_flag[i]==1&&right_lost_flag[i]==0)left_lost_count++;//左丢
         if(left_lost_flag[i]==0&&right_lost_flag[i]==1)right_lost_count++;//右丢
         if(left_lost_flag[i]==1&&right_lost_flag[i]==1)left_right_lost_count++;//丢双边
+    }
+}
+
+/**
+*
+* @brief  计算某几行的平均误差(我打算前期用这个调前瞻范围)
+* @param  start_point
+* @param  end_point
+* @retval err 误差值
+**/
+float err_sum_average(uint8 start_point,uint8 end_point)
+{
+    //防止参数输入错误
+    if(end_point<start_point)
+    {
+        uint8 t=end_point;
+        end_point=start_point;
+        start_point=t;
+    }
+    float err=0;
+    for(int i=start_point;i<end_point;i++)
+    {
+        err+=(DEAL_IMAGE_W/2-((left_line[i]+right_line[i])>>1));//位操作等效除以2
+    }
+    err=err/(end_point-start_point);
+    return err;
+}
+
+/**
+*
+* @brief  计算加权平均误差(后期使用)
+* @param  无
+* @retval err 误差值
+**/
+float err_sum_weight(void)
+{
+    float err;
+    uint8 weight_sum;
+    for(int i=DEAL_IMAGE_H-1;i>DEAL_IMAGE_H-search_stop_line;i--)
+    {
+        err+=(DEAL_IMAGE_W/2-((left_line[i]+right_line[i])>>1)*weight[i]);//位操作等效除以2
+        weight_sum+=weight[i];
+        if((i+2-DEAL_IMAGE_H)*sizeof(uint8)>sizeof(weight))
+        {
+            break;//越界跳出
+        }
+    }
+    err=err/weight_sum;
+    return err;
+}
+
+
+/**
+*
+* @brief  左边补线
+* @param  x1 起点x坐标
+* @param  x2 终点x坐标
+* @param  y1 起点y坐标
+* @param  y2 终点y坐标
+**/
+void left_draw_line(uint8 x1,uint8 y1,uint8 x2,uint8 y2)
+{
+    uint8 hx;
+    uint8 a1=y1;
+    uint8 a2=y2;
+    //防止越界以及参数输入错误
+    if(y1>y2)
+    {
+        uint8 t=y1;
+        y1=y2;
+        y2=t;
+    }
+
+    if(x1>=DEAL_IMAGE_W-1)x1=DEAL_IMAGE_W-1;
+    else if(x1<=0)x1=0;
+    if(y1>=DEAL_IMAGE_H-1)y1=DEAL_IMAGE_H-1;
+    else if(y1<=0)y1=0;
+
+    if(x2>=DEAL_IMAGE_W-1)x2=DEAL_IMAGE_W-1;
+    else if(x2<=0)x2=0;
+    if(y2>=DEAL_IMAGE_H-1)y2=DEAL_IMAGE_H-1;
+    else if(y2<=0)y2=0;
+
+    for(uint8 i=a1;i<a2;i++)
+    {
+        hx=x1+(i-y1)*(x2-x1)/(y2-y1);//使用斜率补线
+        //防止补线越界
+        if(hx>=DEAL_IMAGE_W-1)hx=DEAL_IMAGE_W-1;
+        else if(hx<=0)hx=0;
+        left_line[i]=hx;
+    }
+}
+
+/**
+*
+* @brief  右边补线(虽然和左边补线是一样的，但还是要分开，因为会有单边补线)
+* @param  x1 起点x坐标
+* @param  x2 终点x坐标
+* @param  y1 起点y坐标
+* @param  y2 终点y坐标
+**/
+void right_draw_line(uint8 x1,uint8 y1,uint8 x2,uint8 y2)
+{
+    uint8 hx;
+    uint8 a1=y1;
+    uint8 a2=y2;
+    //防止越界以及参数输入错误
+    if(y1>y2)
+    {
+        uint8 t=y1;
+        y1=y2;
+        y2=t;
+    }
+
+    if(x1>=DEAL_IMAGE_W-1)x1=DEAL_IMAGE_W-1;
+    else if(x1<=0)x1=0;
+    if(y1>=DEAL_IMAGE_H-1)y1=DEAL_IMAGE_H-1;
+    else if(y1<=0)y1=0;
+
+    if(x2>=DEAL_IMAGE_W-1)x2=DEAL_IMAGE_W-1;
+    else if(x2<=0)x2=0;
+    if(y2>=DEAL_IMAGE_H-1)y2=DEAL_IMAGE_H-1;
+    else if(y2<=0)y2=0;
+
+    for(uint8 i=a1;i<a2;i++)
+    {
+        hx=x1+(i-y1)*(x2-x1)/(y2-y1);//使用斜率补线
+        //防止补线越界
+        if(hx>=DEAL_IMAGE_W-1)hx=DEAL_IMAGE_W-1;
+        else if(hx<=0)hx=0;
+        right_line[i]=hx;
     }
 }
 
