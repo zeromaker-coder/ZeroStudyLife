@@ -2,7 +2,7 @@
 #include "pid.h"
 #include "flash.h"
 
-#define IPS200_TYPE     (IPS200_TYPE_PARALLEL8)                                 // 双排排针 并口两寸屏 这里宏定义填写 IPS200_TYPE_PARALLEL8
+#define IPS200_TYPE     (IPS200_TYPE_SPI)                                 // 双排排针 并口两寸屏 这里宏定义填写 IPS200_TYPE_PARALLEL8
                                                                                 // 单排排针 SPI 两寸屏 这里宏定义填写 IPS200_TYPE_SPI
 
 uint8 main_menu_item;//主菜单指针
@@ -21,6 +21,7 @@ void menu_init(void)
     ips200_set_font(IPS200_8X16_FONT);
     ips200_set_color(RGB565_RED, RGB565_BLACK);
     ips200_init(IPS200_TYPE);
+    key_init(5);
     main_menu_item=1;//主菜单指针
     sec_menu_item=1;//副菜单指针
 }
@@ -31,7 +32,7 @@ void menu_init(void)
 */
 void menu(void)
 {
-    if(main_menu_item==1)main_menu();//主菜单
+		if(main_menu_item==1)main_menu();//主菜单
     if(main_menu_item==2)Sec_Menu_01(); //角速度环PID菜单
 }
 
@@ -51,8 +52,10 @@ void main_menu(void)
     ips200_show_string(16,126,"save_param");//保存参数
     ips200_show_string(16,142,"load_param");//载入参数
 
-    ips200_show_string(0,sec_menu_item*16,"->");//菜单指针
-
+    ips200_show_string(0,(sec_menu_item+1)*16,"->");//菜单指针
+	
+	  key_scanner();//这个千万不要忘;
+	
     if(KEY_SHORT_PRESS == key_get_state(KEY_1))
     {
         sec_menu_item--;
@@ -66,7 +69,7 @@ void main_menu(void)
 
     if(KEY_SHORT_PRESS == key_get_state(KEY_2))
     {
-        sec_menu_item--;
+        sec_menu_item++;
         if(sec_menu_item > 8)//如果副菜单指针大于8
         {
             sec_menu_item = 1; //则将副菜单指针置为1
@@ -86,31 +89,31 @@ void main_menu(void)
                 break;
             case 2:
                 // 进入角速度环PID菜单
-                main_menu_item = 3;
+                main_menu_item = 2;
                 sec_menu_item = 1;
                 ips200_clear();
                 break;
             case 3:
                 // 进入角度环PID菜单
-                main_menu_item = 4;
+                main_menu_item = 3;
                 sec_menu_item = 1;
                 ips200_clear();
                 break;
             case 4:
                 // 进入速度环PID菜单
-                main_menu_item = 5;
+                main_menu_item = 4;
                 sec_menu_item = 1;
                 ips200_clear();
                 break;
             case 5:
                 // 进入转向环PID菜单
-                main_menu_item = 6;
+                main_menu_item = 5;
                 sec_menu_item = 1;
                 ips200_clear();
                 break;
             case 6:
                 // 进入常用参数菜单
-                main_menu_item = 7;
+                main_menu_item = 6;
                 sec_menu_item = 1;
                 ips200_clear();
                 break;
@@ -153,8 +156,10 @@ void Sec_Menu_01(void)
     ips200_show_string(16,46,gyro_i_str);//角速度环ki
     ips200_show_string(16,62,"back");//返回上一级菜单
 
-    ips200_show_string(0,sec_menu_item*16,"->");//菜单指针
-
+    ips200_show_string(0,(sec_menu_item+1)*16,"->");//菜单指针
+	
+	  key_scanner();//千万不要忘
+	
     if(KEY_SHORT_PRESS == key_get_state(KEY_1))
     {
         sec_menu_item--;
@@ -168,7 +173,7 @@ void Sec_Menu_01(void)
 
     if(KEY_SHORT_PRESS == key_get_state(KEY_2))
     {
-        sec_menu_item--;
+        sec_menu_item++;
         if(sec_menu_item > 3)//如果副菜单指针大于3
         {
             sec_menu_item = 1; //则将副菜单指针置为1
