@@ -9,7 +9,6 @@ uint8 main_menu_item;//主菜单指针
 uint8 sec_menu_item;//副菜单指针
 uint8 car_go;//小车发车
 
-double change_num[7]={1000.0,100.0,10.0,1.0,1e-1,1e-2,1e-3};
 
 /**
 * @brief  初始化菜单,初始化IPS200显示屏
@@ -164,6 +163,8 @@ void Sec_Menu_01(void)
     if(!change_mode)ips200_show_string(0,(sec_menu_item+1)*16,"->");//菜单指针
     else ips200_show_string(0,(sec_menu_item+1)*16,"*");
 
+    if(change_mode==2)ips200_show_string(0,30+11*16,"*");
+
     key_scanner();//千万不要忘
 
     if(!change_mode)
@@ -279,10 +280,10 @@ void Sec_Menu_01(void)
                         key_clear_state(KEY_2); //清除按键状态
                         ips200_clear();//清屏
                     }
-                    else if(KEY_SHORT_PRESS == key_get_state(KEY_3))
+                    else if(KEY_SHORT_PRESS == key_get_state(KEY_4))
                     {
                         change_mode=1;
-                        key_clear_state(KEY_3); //清除按键状态
+                        key_clear_state(KEY_4); //清除按键状态
                         ips200_clear();//清屏
                     }
         }
