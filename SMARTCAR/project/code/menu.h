@@ -20,5 +20,6 @@ void Sec_Menu_04(void);
 
 void Sec_Menu_05(void);
 
+void image_menu(void);
 
 #endif

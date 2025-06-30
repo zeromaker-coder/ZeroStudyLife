@@ -40,6 +40,7 @@ void menu(void)
     if(main_menu_item==4)Sec_Menu_03();//速度环PI菜单
     if(main_menu_item==5)Sec_Menu_04();//转向环PPDD菜单
     if(main_menu_item==6)Sec_Menu_05();//用户常用参数
+    if(main_menu_item==7)image_menu();//图像菜单
 }
 
 /**
@@ -55,19 +56,20 @@ void main_menu(void)
     ips200_show_string(16,78,"speed_pi"); //速度环PI
     ips200_show_string(16,94,"turn_pppdd");  //转向环ppdd
     ips200_show_string(16,110,"parameter");//常用参数(机械中值之类的)
-    ips200_show_string(16,126,"save_param");//保存参数
-    ips200_show_string(16,142,"load_param");//载入参数
+    ips200_show_string(16,126,"iamge_and_other_param");//图像以及其他参数显示界面
+    ips200_show_string(16,142,"save_param");//保存参数
+    ips200_show_string(16,158,"load_param");//载入参数
 
     ips200_show_string(0,(sec_menu_item+1)*16,"->");//菜单指针
 	
-	  key_scanner();//这个千万不要忘;
+	key_scanner();//这个千万不要忘;
 	
     if(KEY_SHORT_PRESS == key_get_state(KEY_1))
     {
         sec_menu_item--;
         if(sec_menu_item < 1) //如果副菜单指针小于1
         {
-            sec_menu_item = 8; //则将副菜单指针置为8
+            sec_menu_item = 9; //则将副菜单指针置为9
         }
         key_clear_state(KEY_1); //清除按键状态
         ips200_clear(); //清屏
@@ -76,7 +78,7 @@ void main_menu(void)
     if(KEY_SHORT_PRESS == key_get_state(KEY_2))
     {
         sec_menu_item++;
-        if(sec_menu_item > 8)//如果副菜单指针大于8
+        if(sec_menu_item > 9)//如果副菜单指针大于9
         {
             sec_menu_item = 1; //则将副菜单指针置为1
         }
@@ -124,14 +126,22 @@ void main_menu(void)
                 ips200_clear();
                 break;
             case 7:
+                //进入图像参数以及其他参数界面
+                main_menu_item = 7;
+                sec_menu_item = 1;
+                ips200_clear();
+                break;
+            case 8:
                 // 保存参数
+                ips200_clear();
                 ips200_show_string(60, 160, "Param Saved!");
                 menu_save();
                 system_delay_ms(50);
                 ips200_clear();
                 break;
-            case 8:
+            case 9:
                 // 载入参数
+                ips200_clear();
                 ips200_show_string(60, 160, "Param Loaded!");
                 menu_load();
                 system_delay_ms(50);
@@ -1015,12 +1025,22 @@ void Sec_Menu_05(void)
 }
 
 
-/**
-* @brief  摄像头图像显示函数
-* @param   无
-*/
+
 void image_menu(void)
 {
-    ;
-}
+	ips200_show_string(0,0,"Real_image");
+    
+    key_clear_state(KEY_4);//清除按键状态
+	key_scanner();//千万不要忘
 
+    show_real_image(0,30);
+    //返回
+    if(sec_menu_item == 1 && KEY_SHORT_PRESS == key_get_state(KEY_4))
+    {
+        //返回主菜单
+        main_menu_item = 1;
+        sec_menu_item = 1;
+        key_clear_state(KEY_4);//清除按键状态
+        ips200_clear();//清屏
+    }
+}

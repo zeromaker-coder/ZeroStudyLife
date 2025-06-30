@@ -80,7 +80,7 @@ void show_real_image(uint16 x, uint16 y)
 		{
 			uint8 image_copy[MT9V03X_H][MT9V03X_W];
             memcpy(image_copy, mt9v03x_image, MT9V03X_H*MT9V03X_W);
-			ips200_show_gray_image(0, 0, (const uint8 *)image_copy, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
+			ips200_show_gray_image(x, y, (const uint8 *)image_copy, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
 			mt9v03x_finish_flag=0;
 		}
 }
