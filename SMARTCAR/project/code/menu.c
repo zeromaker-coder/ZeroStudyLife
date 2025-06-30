@@ -9,6 +9,8 @@ uint8 main_menu_item;//主菜单指针
 uint8 sec_menu_item;//副菜单指针
 uint8 car_go;//小车发车
 
+float change_item_num[7]={1000,100,10,1,0.1f,0.01f,0.001f};
+
 
 /**
 * @brief  初始化菜单,初始化IPS200显示屏
@@ -31,7 +33,7 @@ void menu_init(void)
 */
 void menu(void)
 {
-		if(main_menu_item==1)main_menu();//主菜单
+	if(main_menu_item==1)main_menu();//主菜单
     if(main_menu_item==2)Sec_Menu_01(); //角速度环PID菜单
 }
 
@@ -146,7 +148,7 @@ void main_menu(void)
 void Sec_Menu_01(void)
 {
     static uint8 change_mode=0;
-    static float change_item=1;
+    static int8 change_item_i=4;
     
     ips200_show_string(60,0,"gyro_pid");//二级菜单标题
     ips200_show_string(16,30+16*0,"gyro_kp:");//角速度环kp
@@ -156,14 +158,14 @@ void Sec_Menu_01(void)
 
 
     //显示数字
-    ips200_show_float(150,30+16*0,gyro_pid_param.kp,3,4);
-    ips200_show_float(150,30+16*1,gyro_pid_param.ki,3,4);
-    ips200_show_float(150,30+16*10,change_item,3,4);
+    ips200_show_float(150,30+16*0,gyro_pid_param.kp,4,3);
+    ips200_show_float(150,30+16*1,gyro_pid_param.ki,4,3);
+    ips200_show_float(150,30+16*10,change_item_num[change_item_i],4,3);
 
     if(!change_mode)ips200_show_string(0,(sec_menu_item+1)*16,"->");//菜单指针
     else ips200_show_string(0,(sec_menu_item+1)*16,"*");
 
-    if(change_mode==2)ips200_show_string(0,30+11*16,"*");
+    if(change_mode==2)ips200_show_string(0,30+10*16,"*");
 
     key_scanner();//千万不要忘
 
@@ -217,13 +219,13 @@ void Sec_Menu_01(void)
                 case 1:
                     if(KEY_SHORT_PRESS == key_get_state(KEY_1))
                     {
-                        gyro_pid_param.kp+= change_item; //增加角速度环kp
+                        gyro_pid_param.kp+= change_item_num[change_item_i];; //增加角速度环kp
                         key_clear_state(KEY_1); //清除按键状态
                         ips200_clear();//清屏
                     }
                     else if(KEY_SHORT_PRESS == key_get_state(KEY_2))
                     {
-                        gyro_pid_param.kp-= change_item; //增加角速度环kp
+                        gyro_pid_param.kp-= change_item_num[change_item_i];; //增加角速度环kp
                         key_clear_state(KEY_2); //清除按键状态
                         ips200_clear();//清屏
                     }
@@ -242,13 +244,13 @@ void Sec_Menu_01(void)
                 case 2:
                     if(KEY_SHORT_PRESS == key_get_state(KEY_1))
                     {
-                        gyro_pid_param.ki+= change_item; //增加角速度环kp
+                        gyro_pid_param.ki+= change_item_num[change_item_i];; //增加角速度环kp
                         key_clear_state(KEY_1); //清除按键状态
                         ips200_clear();//清屏
                     }
                     else if(KEY_SHORT_PRESS == key_get_state(KEY_2))
                     {
-                        gyro_pid_param.ki-= change_item; //增加角速度环kp
+                        gyro_pid_param.ki-= change_item_num[change_item_i];; //增加角速度环kp
                         key_clear_state(KEY_2); //清除按键状态
                         ips200_clear();//清屏
                     }
@@ -270,13 +272,23 @@ void Sec_Menu_01(void)
         {
                     if(KEY_SHORT_PRESS == key_get_state(KEY_1))
                     {
-                        change_item*=10.0;
+                        change_item_i--;
+
+                        if(change_item_i>6) change_item_i=0;
+                        if(change_item_i<0) change_item_i=6;
+
+
                         key_clear_state(KEY_1); //清除按键状态
                         ips200_clear();//清屏
                     }
                     else if(KEY_SHORT_PRESS == key_get_state(KEY_2))
                     {
-                        change_item/=10.0;
+                        change_item_i++;
+
+                        if(change_item_i>6) change_item_i=0;
+                        if(change_item_i<0) change_item_i=6;
+
+    
                         key_clear_state(KEY_2); //清除按键状态
                         ips200_clear();//清屏
                     }
