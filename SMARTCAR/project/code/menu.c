@@ -1,6 +1,7 @@
 #include "menu.h"
 #include "pid.h"
 #include "flash.h"
+#include "image.h"
 
 #define IPS200_TYPE     (IPS200_TYPE_SPI)                                 // 双排排针 并口两寸屏 这里宏定义填写 IPS200_TYPE_PARALLEL8
                                                                                 // 单排排针 SPI 两寸屏 这里宏定义填写 IPS200_TYPE_SPI
@@ -1013,4 +1014,13 @@ void Sec_Menu_05(void)
     }	
 }
 
+
+/**
+* @brief  摄像头图像显示函数
+* @param   无
+*/
+void image_menu(void)
+{
+    ;
+}
 

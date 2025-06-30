@@ -1,4 +1,12 @@
 #include "image.h"
+#define DISPLAY_MODE                ( 0 )                                       // 显示模式 0-灰度显示 1-二值化显示
+                                                                                // 0-灰度显示   就是正常显示的总钻风图像
+                                                                                // 1-二值化显示 根据最后一个二值化阈值显示出对应的二值化图像
+#define BINARIZATION_THRESHOLD      ( 64 )                                      // 二值化阈值 默认 64 需要设置 DISPLAY_MODE 为 1 才使用
+
+
+#define IPS200_TYPE     (IPS200_TYPE_SPI)                                 // 双排排针 并口两寸屏 这里宏定义填写 IPS200_TYPE_PARALLEL8
+                                                                                // 单排排针 SPI 两寸屏 这里宏定义填写 IPS200_TYPE_SPI
 
 //需要处理的图像的长宽
 #define DEAL_IMAGE_H 120
@@ -38,8 +46,60 @@ const uint8 weight[DEAL_IMAGE_H]=
 };
 
 
+/**
+* @brief  摄像头初始化函数
+* @param  无
+*/
+void image_init(void)
+{
+    ips200_show_string(0, 0, "mt9v03x init.");
+    while(1)
+    {
+        if(mt9v03x_init())
+        {
+            ips200_show_string(0, 16, "mt9v03x reinit.");
+        }
+        else
+        {
+            break;
+        }
+        system_delay_ms(500);                                                   // 短延时快速闪灯表示异常
+    }
+    ips200_show_string(0, 16, "init success.");
+    ips200_clear();
+}
 
+/**
+* @brief  摄像头原始图像显示函数
+* @param  x 图像起始x
+* @param  y 图像起始y
+*/
+void show_real_image(uint16 x, uint16 y)
+{
+    	if(mt9v03x_finish_flag)
+		{
+			uint8 image_copy[MT9V03X_H][MT9V03X_W];
+            memcpy(image_copy, mt9v03x_image, MT9V03X_H*MT9V03X_W);
+			ips200_show_gray_image(0, 0, (const uint8 *)image_copy, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
+			mt9v03x_finish_flag=0;
+		}
+}
 
+/**
+* @brief  摄像头二值化图像显示函数
+* @param  x 图像起始x
+* @param  y 图像起始y
+*/
+void show_binary_image(uint16 x, uint16 y)
+{
+        if(mt9v03x_finish_flag)
+		{
+			uint8 image_copy[MT9V03X_H][MT9V03X_W];
+            memcpy(image_copy, binary_image, MT9V03X_H*MT9V03X_W);
+			ips200_show_gray_image(0, 0, (const uint8 *)image_copy, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
+			mt9v03x_finish_flag=0;
+		}
+}
 
 /**
 * @brief   出界判断,选取图像底部中间10*3区域进行判断
