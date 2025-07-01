@@ -1,4 +1,5 @@
 #include "image.h"
+#include "math.h"
 #define DISPLAY_MODE                ( 0 )                                       // 显示模式 0-灰度显示 1-二值化显示
                                                                                 // 0-灰度显示   就是正常显示的总钻风图像
                                                                                 // 1-二值化显示 根据最后一个二值化阈值显示出对应的二值化图像
@@ -152,55 +153,62 @@ void Image_Compress(unsigned char *in_image, unsigned char *out_image)
 /**
   * @brief  otsu算法获取阈值
   * @param  *image 图像数组指针 
-  * @param  width 图像宽度
-  * @param  height 图像高度
+  * @param  col 图像宽度
+  * @param  row 图像高度
   * @retval 阈值
   */
-uint8 otsu_get_threshold(uint8 *image, uint16 width, uint16 height) {
-    uint32 histogram[256] = {0};
-    uint32 total_pixels = width * height/4;
-
-    // 计算直方图
-    for (uint16 i = 0; i < height; i+=2) {
-        for (uint16 j = 0; j < width; j+=2) {
-            histogram[(int)image[i * width + j]]++;
+int otsu_get_threshold(uint8 *image, uint16 col, uint16 row)   
+{
+    #define GrayScale 256
+    uint16 width = col;
+    uint16 height = row;
+    int pixelCount[GrayScale];
+    float pixelPro[GrayScale];
+    int i, j;
+    int pixelSum = width * height/4;
+    int threshold = 0;
+    uint8* data = image;  
+    for (i = 0; i < GrayScale; i++)
+    {
+        pixelCount[i] = 0;
+        pixelPro[i] = 0;
+    }
+    uint32 gray_sum=0;
+    //统计灰度级中每个像素在整幅图像中的个数
+    for (i = 0; i < height; i+=2)
+    {
+        for (j = 0; j < width; j+=2)
+        {
+            pixelCount[(int)data[i * width + j]]++;  //将当前的点的像素值作为计数数组的下标
+            gray_sum+=(int)data[i * width + j];       //灰度值总和
         }
     }
-
-    // 计算全局平均灰度值
-    double sum = 0;
-    for (int i = 0; i < 256; i++) {
-        sum += i * histogram[i];
+    //计算每个像素值的点在整幅图像中的比例
+    for (i = 0; i < GrayScale; i++)
+    {
+        pixelPro[i] = (float)pixelCount[i] / pixelSum;
     }
-    double global_mean = sum / total_pixels;
-
-    double max_variance = 0;
-    uint8 threshold = 0;
-
-    //otsu计算阈值
-    for (uint16 t = 0; t < 256; t++) {
-        double w0 = 0, w1 = 0;
-        double sum0 = 0, sum1 = 0;
-
-        for (uint16 i = 0; i <= t; i++) {
-            w0 += histogram[i];
-            sum0 += i * histogram[i];
+    //遍历灰度级[0,255]
+    float w0, w1, u0tmp, u1tmp, u0, u1, u, deltaTmp, deltaMax = 0;
+    w0 = w1 = u0tmp = u1tmp = u0 = u1 = u = deltaTmp = 0;
+    for (j = 0; j < GrayScale; j++)
+    {
+        w0 += pixelPro[j];  //背景部分每个灰度值的像素点所占比例之和   即背景部分的比例
+        u0tmp += j * pixelPro[j];  //背景部分 每个灰度值的点的比例 *灰度值
+        w1=1-w0;
+        u1tmp=gray_sum/pixelSum-u0tmp;
+        u0 = u0tmp / w0;              //背景平均灰度
+        u1 = u1tmp / w1;              //前景平均灰度
+        u = u0tmp + u1tmp;            //全局平均灰度
+        deltaTmp = w0 * pow((u0 - u), 2) + w1 * pow((u1 - u), 2);
+        if (deltaTmp > deltaMax)
+        {
+            deltaMax = deltaTmp;
+            threshold = j;
         }
-        for (uint16 i = t + 1; i < 256; i++) {
-            w1 += histogram[i];
-            sum1 += i * histogram[i];
-        }
-
-        if (w0 == 0 || w1 == 0) continue;
-
-        double mean0 = sum0 / w0;
-        double mean1 = sum1 / w1;
-
-        double variance = w0 * w1 * ((mean0 - mean1) * (mean0 - mean1));
-
-        if (variance > max_variance) {
-            max_variance = variance;
-            threshold = t;
+        if (deltaTmp < deltaMax)
+        {
+            break;
         }
     }
     return threshold;
