@@ -45,23 +45,95 @@
 #include "beep.h"
 #include "menu.h"
 #include "image.h"
+#include "imu.h"
+
+//指示灯以及蜂鸣器
+#define LED1                    (H2 )
+#define LED2                    (B13)
+#define BEEP                    (D7 )       // 蜂鸣器接口
+
+//角速度环定时器
+#define GYRO_PIT                     (TIM6_PIT )                                     // 使用的周期中断编号 如果修改 需要同步对应修改周期中断编号与 isr.c 中的调用
+#define GYRO_PIT_PRIORITY            (TIM6_IRQn)                                     // 对应周期中断的中断编号 在 mm32f3277gx.h 头文件中查看 IRQn_Type 枚举体
+//角度环定时器
+#define ANGLE_PIT                    (TIM5_PIT)
+#define ANGLE_PIT_PRIORITY           (TIM5_IRQn)   
+//速度环定时器
+#define SPEED_PIT                    (TIM4_PIT)
+#define SPEED_PIT_PRIORITY           (TIM4_IRQn) 
+
+uint8 gyro_pit_state;//角速度环定时器标志位
+uint8 angle_pit_state;//角度环定时器标志位
+uint8 speed_pit_state;//速度环定时器标志位
 
 int main(void)
 {
+    // 此处编写用户代码 例如外设初始化代码等
     clock_init(SYSTEM_CLOCK_120M);                                              // 初始化芯片时钟 工作频率为 120MHz
     debug_init();                                                               // 初始化默认 Debug UART
-    menu_init();
-    image_init();                                                             
-    
-    // 此处编写用户代码 例如外设初始化代码等
-    
 
+    menu_init();//菜单初始化
+    image_init();//图像采样初始化 
+    
+    gpio_init(BEEP, GPO, GPIO_LOW, GPO_PUSH_PULL);//蜂鸣器初始化
+    gpio_init(LED1, GPO, GPIO_HIGH, GPO_PUSH_PULL);//指示灯初始化
+    gpio_init(LED2, GPO, GPIO_HIGH, GPO_PUSH_PULL);
+
+    pit_ms_init(GYRO_PIT,3);//3ms一次角速度解算
+    pit_ms_init(ANGLE_PIT,5);//5ms一次角度解算
+    pit_ms_init(SPEED_PIT,20);//20ms一次速度解算
+
+    //设置中断优先级，0为最高
+    interrupt_set_priority(GYRO_PIT_PRIORITY,0);
+    interrupt_set_priority(ANGLE_PIT_PRIORITY,0);
+    interrupt_set_priority(SPEED_PIT_PRIORITY,0);
+    
+    gpio_set_level(BEEP, GPIO_HIGH);                                            // BEEP 响
+    system_delay_ms(100);
+    gpio_set_level(BEEP, GPIO_LOW);                                             // BEEP 停
+    system_delay_ms(100);
     while(1)
     {
         
 		// 此处编写需要循环执行的代码
-        menu();
+        if(!car_go)
+        {
+            menu();
+        }
+        
+        if(gyro_pit_state)
+        {
+            gyro_pit_state=0;
+        }
+
+        if(angle_pit_state)
+        {
+            angle_pit_state=0;
+        }
+
+        if(speed_pit_state)
+        {
+            speed_pit_state=0;
+        }
         beep_cycle();
     }
 }
 // **************************** 代码区域 ****************************
+//角速度环中断触发函数
+void gyro_pit_handler(void)
+{
+    gyro_pit_state=1;
+}
+
+//角度环中断触发函数
+void angle_pit_handler(void)
+{
+    angle_pit_state=1;
+}
+
+//速度环中断触发函数
+void speed_pit_handler(void)
+{
+    speed_pit_state=1;
+}
+

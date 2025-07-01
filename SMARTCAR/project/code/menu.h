@@ -22,4 +22,6 @@ void Sec_Menu_05(void);
 
 void image_menu(void);
 
+extern uint8 car_go;
+
 #endif

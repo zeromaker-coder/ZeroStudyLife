@@ -78,7 +78,8 @@ void TIM3_IRQHandler (void)
 void TIM4_IRQHandler (void)
 {
     // 此处编写用户代码
-
+    extern void speed_pit_handler(void);
+    speed_pit_handler();
     // 此处编写用户代码
     TIM4->SR &= ~TIM4->SR;                                                      // 清空中断状态
 }
@@ -90,7 +91,8 @@ void TIM4_IRQHandler (void)
 void TIM5_IRQHandler (void)
 {
     // 此处编写用户代码
-
+    extern void angle_pit_handler(void);
+    angle_pit_handler();
     // 此处编写用户代码
     TIM5->SR &= ~TIM5->SR;                                                      // 清空中断状态
 }
@@ -102,7 +104,8 @@ void TIM5_IRQHandler (void)
 void TIM6_IRQHandler (void)
 {
     // 此处编写用户代码
-
+    extern void gyro_pit_handler(void);
+    gyro_pit_handler();
     // 此处编写用户代码
     TIM6->SR &= ~TIM6->SR;                                                      // 清空中断状态
 }

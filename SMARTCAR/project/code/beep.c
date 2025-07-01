@@ -10,7 +10,7 @@ uint16 count_beep = 0;                  // 蜂鸣器计数器
   */
 void beep_on(void)
 {
-    count_beep=40;
+    count_beep=5;
 }
 
 /**
@@ -23,5 +23,11 @@ void beep_cycle(void)
     if(count_beep)
     {
         gpio_set_level(BEEP,GPIO_HIGH);
+        count_beep--;
+    }
+    else
+    {
+        count_beep=0;
+        gpio_set_level(BEEP, GPIO_LOW);
     }
 }

@@ -2,6 +2,7 @@
 #include "pid.h"
 #include "flash.h"
 #include "image.h"
+#include "beep.h"
 
 #define IPS200_TYPE     (IPS200_TYPE_SPI)                                 // 双排排针 并口两寸屏 这里宏定义填写 IPS200_TYPE_PARALLEL8
                                                                                 // 单排排针 SPI 两寸屏 这里宏定义填写 IPS200_TYPE_SPI
@@ -92,8 +93,10 @@ void main_menu(void)
         {
             case 1:
                 // 进入小车发车菜单
-                car_go=1;//小车发车
+                beep_on();
+                system_delay_ms(50);
                 ips200_clear();
+                car_go=1;//小车发车
                 break;
             case 2:
                 // 进入角速度环PID菜单
@@ -136,6 +139,7 @@ void main_menu(void)
                 ips200_clear();
                 ips200_show_string(60, 160, "Param Saved!");
                 menu_save();
+                beep_on();
                 system_delay_ms(50);
                 ips200_clear();
                 break;
@@ -144,6 +148,7 @@ void main_menu(void)
                 ips200_clear();
                 ips200_show_string(60, 160, "Param Loaded!");
                 menu_load();
+                beep_on();
                 system_delay_ms(50);
                 ips200_clear();
                 break;
