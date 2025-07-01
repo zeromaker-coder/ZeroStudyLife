@@ -1,4 +1,6 @@
 #include "pid.h"
+#include "imu.h"
+#include "encoder.h"
 
 //定义结构体
 PID_LocTypeDef gyro_pid_param;//角速度环结构体
@@ -100,6 +102,36 @@ float PID_D_Pre_location(float setvalue, float actualvalue, float GY ,PID_LocTyp
 	if(PID->out>PID->PID_OUT_LIMIT_MAX)PID->out=PID->PID_OUT_LIMIT_MAX;
 	
 	return PID->out;
+}
+
+/**
+* @brief  角速度环pid函数
+* @param  无
+* @retval gyro_pid_out 角速度环输出量
+*/
+void gyro_pid_location(void)
+{
+    gyro_pid_out=PID_location(angle_pid_out,imu660ra_gyro_y,gyro_pid_pin);//角速度环
+}
+
+/**
+* @brief  角度环pid函数
+* @param  无
+* @retval angle_pid_out 角度环输出量
+*/
+void angle_pid_location(void)
+{
+    angle_pid_out=PID_D_Pre_location(speed_pid_out+user_param.mid_angle,filtering_angle,imu660ra_gyro_y,angle_pid_pin);//角度环
+}
+
+/**
+* @brief  速度环pid函数
+* @param  无
+* @retval speed_pid_out 速度环输出量
+*/
+void speed_pid_loacation(void)
+{
+    speed_pid_out=PID_location(user_param.target_speed,(encoder_data_right+encoder_data_left)/2,speed_pid_pin);//速度环
 }
 
 

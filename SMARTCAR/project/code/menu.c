@@ -3,6 +3,8 @@
 #include "flash.h"
 #include "image.h"
 #include "beep.h"
+#include "encoder.h"
+#include "imu.h"
 
 #define IPS200_TYPE     (IPS200_TYPE_SPI)                                 // 双排排针 并口两寸屏 这里宏定义填写 IPS200_TYPE_PARALLEL8
                                                                                 // 单排排针 SPI 两寸屏 这里宏定义填写 IPS200_TYPE_SPI
@@ -1033,8 +1035,17 @@ void Sec_Menu_05(void)
 
 void image_menu(void)
 {
-	ips200_show_string(0,0,"Real_image");
-    
+	//显示字符
+    ips200_show_string(0,0,"Real_image:");
+    ips200_show_string(0,150,"encoder_left:");
+    ips200_show_string(0,150+16,"encoder_right:");
+    ips200_show_string(0,150+16*2,"angle:");
+
+    //显示数字
+    ips200_show_int(150,150,encoder_data_left,3);
+    ips200_show_int(150,150+16,encoder_data_right,3);
+    ips200_show_float(150,150+16*2,filtering_angle,3,1);
+
     key_clear_state(KEY_4);//清除按键状态
 	key_scanner();//千万不要忘
 

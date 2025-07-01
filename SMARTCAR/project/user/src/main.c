@@ -46,6 +46,7 @@
 #include "menu.h"
 #include "image.h"
 #include "imu.h"
+#include "encoder.h"
 
 //指示灯以及蜂鸣器
 #define LED1                    (H2 )
@@ -59,8 +60,8 @@
 #define ANGLE_PIT                    (TIM5_PIT)
 #define ANGLE_PIT_PRIORITY           (TIM5_IRQn)   
 //速度环定时器
-#define SPEED_PIT                    (TIM4_PIT)
-#define SPEED_PIT_PRIORITY           (TIM4_IRQn) 
+#define SPEED_PIT                    (TIM2_PIT)
+#define SPEED_PIT_PRIORITY           (TIM2_IRQn) 
 
 uint8 gyro_pit_state;//角速度环定时器标志位
 uint8 angle_pit_state;//角度环定时器标志位
@@ -73,7 +74,8 @@ int main(void)
     debug_init();                                                               // 初始化默认 Debug UART
 
     menu_init();//菜单初始化
-    image_init();//图像采样初始化 
+    image_init();//图像采样初始化
+    encoder_init();//编码器初始化 
     
     gpio_init(BEEP, GPO, GPIO_LOW, GPO_PUSH_PULL);//蜂鸣器初始化
     gpio_init(LED1, GPO, GPIO_HIGH, GPO_PUSH_PULL);//指示灯初始化
@@ -134,6 +136,7 @@ void angle_pit_handler(void)
 //速度环中断触发函数
 void speed_pit_handler(void)
 {
+    encoder_read();
     speed_pit_state=1;
 }
 
