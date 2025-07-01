@@ -102,7 +102,6 @@ int main(void)
         {
             menu();
         }
-        
         if(gyro_pit_state)
         {
             gyro_pit_state=0;
@@ -110,6 +109,7 @@ int main(void)
 
         if(angle_pit_state)
         {
+            image_threshold=otsu_get_threshold(mt9v03x_image,188,120);
             angle_pit_state=0;
         }
 
@@ -117,6 +117,7 @@ int main(void)
         {
             speed_pit_state=0;
         }
+
         beep_cycle();
     }
 }

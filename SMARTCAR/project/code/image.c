@@ -1,6 +1,6 @@
 #include "image.h"
 #include "math.h"
-#define DISPLAY_MODE                ( 0 )                                       // 显示模式 0-灰度显示 1-二值化显示
+#define DISPLAY_MODE                ( 1 )                                       // 显示模式 0-灰度显示 1-二值化显示
                                                                                 // 0-灰度显示   就是正常显示的总钻风图像
                                                                                 // 1-二值化显示 根据最后一个二值化阈值显示出对应的二值化图像
 #define BINARIZATION_THRESHOLD      ( 64 )                                      // 二值化阈值 默认 64 需要设置 DISPLAY_MODE 为 1 才使用
@@ -15,6 +15,7 @@
 
 //一些常用变量
 uint8 binary_image[MT9V03X_H][MT9V03X_W]; //二值化图像数组
+uint8 image_threshold;//图像阈值
 uint8 left_line[MT9V03X_H];//左边界数组
 uint8 right_line[MT9V03X_H];//右边界数组
 uint8 mid_line[MT9V03X_H];//中线数组
@@ -91,13 +92,13 @@ void show_real_image(uint16 x, uint16 y)
 * @param  x 图像起始x
 * @param  y 图像起始y
 */
-void show_binary_image(uint16 x, uint16 y)
+void show_binary_image(uint16 x, uint16 y,uint8 threshold)
 {
         if(mt9v03x_finish_flag)
 		{
 			uint8 image_copy[MT9V03X_H][MT9V03X_W];
             memcpy(image_copy, binary_image, MT9V03X_H*MT9V03X_W);
-			ips200_show_gray_image(0, 0, (const uint8 *)image_copy, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
+			ips200_show_gray_image(0, 0, (const uint8 *)image_copy, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, threshold);
 			mt9v03x_finish_flag=0;
 		}
 }
@@ -242,7 +243,7 @@ void image_binary(uint8 *in_image,unsigned char *out_image)
             final_threshold = threshold;
             // if(final_threshold<80) final_threshold=80;
             if ( *(in_image+temp+x) > final_threshold)
-                *(out_image+temp+x) = 1;  // 白
+                *(out_image+temp+x) = 255;  // 白
             else
                 *(out_image+temp+x) = 0;  // 黑
         }
