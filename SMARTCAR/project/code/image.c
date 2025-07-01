@@ -97,8 +97,8 @@ void show_binary_image(uint16 x, uint16 y,uint8 threshold)
         if(mt9v03x_finish_flag)
 		{
 			uint8 image_copy[MT9V03X_H][MT9V03X_W];
-            memcpy(image_copy, binary_image, MT9V03X_H*MT9V03X_W);
-			ips200_show_gray_image(0, 0, (const uint8 *)image_copy, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, threshold);
+            memcpy(image_copy,mt9v03x_image , MT9V03X_H*MT9V03X_W);
+			ips200_show_gray_image(x, y, (const uint8 *)image_copy, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, threshold);
 			mt9v03x_finish_flag=0;
 		}
 }
@@ -243,7 +243,7 @@ void image_binary(uint8 *in_image,unsigned char *out_image)
             final_threshold = threshold;
             // if(final_threshold<80) final_threshold=80;
             if ( *(in_image+temp+x) > final_threshold)
-                *(out_image+temp+x) = 255;  // 白
+                *(out_image+temp+x) = 1;  // 白
             else
                 *(out_image+temp+x) = 0;  // 黑
         }

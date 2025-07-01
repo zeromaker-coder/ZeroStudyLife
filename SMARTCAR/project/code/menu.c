@@ -60,7 +60,7 @@ void main_menu(void)
     ips200_show_string(16,78,"speed_pi"); //速度环PI
     ips200_show_string(16,94,"turn_pppdd");  //转向环ppdd
     ips200_show_string(16,110,"parameter");//常用参数(机械中值之类的)
-    ips200_show_string(16,126,"iamge_and_other_param");//图像以及其他参数显示界面
+    ips200_show_string(16,126,"image_and_other_param");//图像以及其他参数显示界面
     ips200_show_string(16,142,"save_param");//保存参数
     ips200_show_string(16,158,"load_param");//载入参数
 
@@ -1171,8 +1171,9 @@ void Sec_Menu_05(void)
 
 void image_menu(void)
 {
-	//显示字符
-    ips200_show_string(0,0,"Real_image:");
+	static uint8 image_flag=1;//图像显示类型
+    //显示字符
+    ips200_show_string(0,0,"Real_image&binary_image:");
     ips200_show_string(0,150,"encoder_left:");
     ips200_show_string(0,150+16,"encoder_right:");
     ips200_show_string(0,150+16*2,"angle:");
@@ -1187,7 +1188,17 @@ void image_menu(void)
     key_clear_state(KEY_4);//清除按键状态
 	key_scanner();//千万不要忘
 
-    show_real_image(0,30);
+    if(!image_flag)show_binary_image(0,30,image_threshold);
+    else show_real_image(0,30);
+    
+
+    if(sec_menu_item == 1 && KEY_SHORT_PRESS == key_get_state(KEY_3))
+    {
+        //返回主菜单
+        image_flag=!image_flag;
+        key_clear_state(KEY_3);//清除按键状态
+        ips200_clear();//清屏
+    }
     //返回
     if(sec_menu_item == 1 && KEY_SHORT_PRESS == key_get_state(KEY_4))
     {
