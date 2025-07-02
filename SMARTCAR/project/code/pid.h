@@ -10,8 +10,7 @@ typedef struct
   float ki;                       
   float kd;                       
   float ek;                      
-  float ek1;                      
-  float ek2;                      
+  float ek1;                                            
   float location_sum;            
   float out;
   float PID_I_LIMIT_MAX;
@@ -24,6 +23,11 @@ typedef struct
   float kd;
   float kp2;
   float kd2;
+  float ek;                      
+  float ek1;                      
+  float location_sum;            
+  float out;
+  float PID_I_LIMIT_MAX;
   float PID_OUT_LIMIT_MAX;	
 }Turn_PPDD_LocTypeDef;
 

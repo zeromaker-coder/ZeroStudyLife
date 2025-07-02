@@ -38,11 +38,14 @@ void menu_save(void)
     flash_union_buffer[11].float_type = gyro_pid_param.PID_OUT_LIMIT_MAX;
 
     flash_union_buffer[12].float_type = angle_pid_param.PID_OUT_LIMIT_MAX;
+
     flash_union_buffer[13].float_type = speed_pid_param.PID_OUT_LIMIT_MAX;
     flash_union_buffer[14].float_type = speed_pid_param.PID_I_LIMIT_MAX;
 
-    flash_union_buffer[15].float_type = user_param.mid_angle;
-    flash_union_buffer[16].float_type = user_param.target_speed;
+    flash_union_buffer[15].float_type = turn_pid_param.PID_OUT_LIMIT_MAX;
+
+    flash_union_buffer[16].float_type = user_param.mid_angle;
+    flash_union_buffer[17].float_type = user_param.target_speed;
 
     flash_write_page_from_buffer(FLASH_SECTION_INDEX, FLASH_PAGE_INDEX);        // 向指定 Flash 扇区的页码写入缓冲区数据
 }
@@ -73,11 +76,14 @@ void menu_load(void)
     gyro_pid_param.PID_OUT_LIMIT_MAX= flash_union_buffer[11].float_type;
 
     angle_pid_param.PID_OUT_LIMIT_MAX= flash_union_buffer[12].float_type;
+
     speed_pid_param.PID_OUT_LIMIT_MAX = flash_union_buffer[13].float_type;
     speed_pid_param.PID_I_LIMIT_MAX = flash_union_buffer[14].float_type;
 
-    user_param.mid_angle = flash_union_buffer[15].float_type;
-    user_param.target_speed = flash_union_buffer[16].float_type;
+    turn_pid_param.PID_OUT_LIMIT_MAX = flash_union_buffer[15].float_type;
+
+    user_param.mid_angle = flash_union_buffer[16].float_type;
+    user_param.target_speed = flash_union_buffer[17].float_type;
     
     flash_buffer_clear(); //擦除缓存区
 }

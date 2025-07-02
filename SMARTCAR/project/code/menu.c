@@ -58,7 +58,7 @@ void main_menu(void)
     ips200_show_string(16,46,"gyro_pi");  //角速度环PI
     ips200_show_string(16,62,"angle_pd"); //角度环PD
     ips200_show_string(16,78,"speed_pi"); //速度环PI
-    ips200_show_string(16,94,"turn_pppdd");  //转向环ppdd
+    ips200_show_string(16,94,"turn_ppdd");  //转向环ppdd
     ips200_show_string(16,110,"parameter");//常用参数(机械中值之类的)
     ips200_show_string(16,126,"image_and_other_param");//图像以及其他参数显示界面
     ips200_show_string(16,142,"save_param");//保存参数
@@ -887,7 +887,8 @@ void Sec_Menu_05(void)
     ips200_show_string(16,30+16*4,"angle_out_max:");//角度环最大输出
     ips200_show_string(16,30+16*5,"speed_i_out_max:");//速度环i最大输出
     ips200_show_string(16,30+16*6,"speed_out_max:");//速度环最大输出
-    ips200_show_string(16,30+16*7,"back");//返回上一级菜单
+    ips200_show_string(16,30+16*7,"turn_out_max");//转向环最大输出
+    ips200_show_string(16,30+16*8,"back");//返回上一级菜单
     ips200_show_string(16,30+16*10,"change_item:");//修改量
 
 
@@ -899,6 +900,7 @@ void Sec_Menu_05(void)
     ips200_show_float(150,30+16*4,angle_pid_param.PID_OUT_LIMIT_MAX,4,3);
     ips200_show_float(150,30+16*5,speed_pid_param.PID_I_LIMIT_MAX,4,3);
     ips200_show_float(150,30+16*6,speed_pid_param.PID_OUT_LIMIT_MAX,4,3);
+    ips200_show_float(150,30+16*7,turn_pid_param.PID_OUT_LIMIT_MAX,4,3);
     ips200_show_float(150,30+16*10,change_item_num[change_item_i],4,3);
 
     if(!change_mode)ips200_show_string(0,(sec_menu_item+1)*16,"->");//菜单指针
@@ -915,7 +917,7 @@ void Sec_Menu_05(void)
             sec_menu_item--;
             if(sec_menu_item < 1) //如果副菜单指针小于1
             {
-                sec_menu_item = 8; //则将副菜单指针置为3
+                sec_menu_item = 9; //则将副菜单指针置为9
             }
             key_clear_state(KEY_1); //清除按键状态
             ips200_clear();//清屏
@@ -924,7 +926,7 @@ void Sec_Menu_05(void)
         if(KEY_SHORT_PRESS == key_get_state(KEY_2))
         {
             sec_menu_item++;
-            if(sec_menu_item > 8)//如果副菜单指针大于3
+            if(sec_menu_item > 9)//如果副菜单指针大于9
             {
                 sec_menu_item = 1; //则将副菜单指针置为1
             }
@@ -932,7 +934,7 @@ void Sec_Menu_05(void)
             ips200_clear();//清屏
         }
         //返回
-        if((sec_menu_item == 8 && KEY_SHORT_PRESS == key_get_state(KEY_3))||KEY_SHORT_PRESS == key_get_state(KEY_4))
+        if((sec_menu_item == 9 && KEY_SHORT_PRESS == key_get_state(KEY_3))||KEY_SHORT_PRESS == key_get_state(KEY_4))
         {
             //返回主菜单
             main_menu_item = 1;
@@ -942,7 +944,7 @@ void Sec_Menu_05(void)
             ips200_clear();//清屏
         }
         
-        if(sec_menu_item>=1&&sec_menu_item<=7 && KEY_SHORT_PRESS == key_get_state(KEY_3))
+        if(sec_menu_item>=1&&sec_menu_item<=8 && KEY_SHORT_PRESS == key_get_state(KEY_3))
         {
             change_mode=1;
             key_clear_state(KEY_3);//清除按键状态
@@ -1115,6 +1117,31 @@ void Sec_Menu_05(void)
                     else if(KEY_SHORT_PRESS == key_get_state(KEY_2))
                     {
                         speed_pid_param.PID_OUT_LIMIT_MAX-= change_item_num[change_item_i];
+                        key_clear_state(KEY_2); //清除按键状态
+                        ips200_clear();//清屏
+                    }
+                    else if(KEY_SHORT_PRESS == key_get_state(KEY_3))
+                    {
+                        change_mode=2;//修改加减量模式
+                        key_clear_state(KEY_3); //清除按键状态
+                        ips200_clear();//清屏
+                    }
+                    else if(KEY_SHORT_PRESS == key_get_state(KEY_4))
+                    {
+                        change_mode=0;
+                        key_clear_state(KEY_4); //清除按键状态
+                        ips200_clear();//清屏
+                    }
+                case 8:
+                    if(KEY_SHORT_PRESS == key_get_state(KEY_1))
+                    {
+                        turn_pid_param.PID_OUT_LIMIT_MAX+= change_item_num[change_item_i]; 
+                        key_clear_state(KEY_1); //清除按键状态
+                        ips200_clear();//清屏
+                    }
+                    else if(KEY_SHORT_PRESS == key_get_state(KEY_2))
+                    {
+                        turn_pid_param.PID_OUT_LIMIT_MAX-= change_item_num[change_item_i];
                         key_clear_state(KEY_2); //清除按键状态
                         ips200_clear();//清屏
                     }

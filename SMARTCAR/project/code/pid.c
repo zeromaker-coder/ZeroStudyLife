@@ -1,6 +1,8 @@
 #include "pid.h"
 #include "imu.h"
+#include "image.h"
 #include "encoder.h"
+#include "math.h"
 
 //定义结构体
 PID_LocTypeDef gyro_pid_param;//角速度环结构体
@@ -22,6 +24,7 @@ USER_PARAM_LocTypeDef* user_param_pin;//常用参数
 float gyro_pid_out;//角速度环输出
 float angle_pid_out;//角度环输出
 float speed_pid_out;//速度环输出
+float turn_pid_out;//转向环输出
 
 
 
@@ -97,11 +100,33 @@ float PID_D_Pre_location(float setvalue, float actualvalue, float GY ,PID_LocTyp
 	if((PID->ki!=0)&&(PID->location_sum*PID->ki<-PID->PID_I_LIMIT_MAX)) PID->location_sum=-PID->PID_I_LIMIT_MAX;
 	//out计算
     PID->out=PID->kp*PID->ek+(PID->ki*PID->location_sum)+PID->kd*GY;//极性调整处
+    PID->ek1 = PID->ek;  
     //PID限幅
 	if(PID->out<-PID->PID_OUT_LIMIT_MAX)PID->out=-PID->PID_OUT_LIMIT_MAX;
 	if(PID->out>PID->PID_OUT_LIMIT_MAX)PID->out=PID->PID_OUT_LIMIT_MAX;
 	
 	return PID->out;
+}
+
+/**
+* @brief  PPDD位置式PID
+* @param   setvalue 设定值
+* @param   actualvalue 实际值
+* @param   GZ  角速度
+* @param   PPDD PPDD参数结构体
+*/
+float PPDD_location(float setvalue,float actualvalue, float GZ, Turn_PPDD_LocTypeDef *PPDD)
+{
+    PPDD->ek =setvalue-actualvalue;
+    PPDD->location_sum += PPDD->ek;//计算累计误差值                         
+    //out计算
+    PPDD->out=PPDD->kp*PPDD->ek+PPDD->kp2*abs(PPDD->ek)*PPDD->ek+(PPDD->ek-PPDD->ek1)*PPDD->kd+GZ*PPDD->kd2;//极性调整处
+    PPDD->ek1 = PPDD->ek;  
+    //PID限幅
+    if(PPDD->out<-PPDD->PID_OUT_LIMIT_MAX)PPDD->out=-PPDD->PID_OUT_LIMIT_MAX;
+    if(PPDD->out>PPDD->PID_OUT_LIMIT_MAX)PPDD->out=PPDD->PID_OUT_LIMIT_MAX;
+    
+    return PPDD->out;
 }
 
 /**
@@ -134,6 +159,15 @@ void speed_pid_loacation(void)
     speed_pid_out=PID_location(user_param.target_speed,(encoder_data_right+encoder_data_left)/2,speed_pid_pin);//速度环
 }
 
+/**
+* @brief  转向环pid函数
+* @param  无
+* @retval turn_pid_out 速度环输出量
+*/
+void turn_pid_location(void)
+{
+    turn_pid_out=PPDD_location(0,line_err,imu660ra_gyro_z,turn_pid_pin);//转向环
+}
 
 
 

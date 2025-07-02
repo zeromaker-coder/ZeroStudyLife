@@ -17,4 +17,6 @@ extern uint8 binary_image[MT9V03X_H][MT9V03X_W];
 
 extern uint8 image_threshold;
 
+extern uint8 line_err;
+
 #endif
