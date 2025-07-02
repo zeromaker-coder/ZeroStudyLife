@@ -24,4 +24,8 @@ void image_menu(void);
 
 extern uint8 car_go;
 
+extern uint8 main_menu_item;
+
+extern uint8 sec_menu_item;
+
 #endif

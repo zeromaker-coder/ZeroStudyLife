@@ -3,6 +3,16 @@
 
 #include "zf_common_headfile.h"
 
+void gyro_pid_location(void);
+
+void angle_pid_location(void);
+
+void speed_pid_loacation(void);
+
+void turn_pid_location(void);
+
+void pid_init(void);
+
 
 typedef struct
 {

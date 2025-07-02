@@ -12,11 +12,11 @@ Turn_PPDD_LocTypeDef turn_pid_param;//转向环结构体
 USER_PARAM_LocTypeDef user_param;//常用参数
 
 //定义结构体指针
-PID_LocTypeDef* gyro_pid_pin;//角速度环结构体指针
-PID_LocTypeDef* angle_pid_pin;//角度环结构体指针
-PID_LocTypeDef* speed_pid_pin;//速度环结构体指针
-Turn_PPDD_LocTypeDef* turn_pid_pin;//转向环结构体指针
-USER_PARAM_LocTypeDef* user_param_pin;//常用参数
+PID_LocTypeDef* gyro_pid_pin=&gyro_pid_param;//角速度环结构体指针
+PID_LocTypeDef* angle_pid_pin=&angle_pid_param;//角度环结构体指针
+PID_LocTypeDef* speed_pid_pin=&speed_pid_param;//速度环结构体指针
+Turn_PPDD_LocTypeDef* turn_pid_pin=&turn_pid_param;//转向环结构体指针
+USER_PARAM_LocTypeDef* user_param_pin=&user_param;//常用参数
 
 
 
@@ -39,18 +39,26 @@ void pid_init(void)
     gyro_pid_param.kp=0.0;
     gyro_pid_param.ki=0.0;
     gyro_pid_param.kd=0.0;
+    gyro_pid_param.out=0.0;
+    gyro_pid_param.ek=0.0;
+    gyro_pid_param.ek1=0.0;
+    gyro_pid_param.location_sum=0.0;
     gyro_pid_param.PID_I_LIMIT_MAX=0.0;
     gyro_pid_param.PID_OUT_LIMIT_MAX=0.0;
     //角度环参数初始化
     angle_pid_param.kp=0.0;
     angle_pid_param.ki=0.0;
     angle_pid_param.kd=0.0;
+    angle_pid_param.out=0.0;
+    angle_pid_param.ek=0.0;
     angle_pid_param.PID_I_LIMIT_MAX=0.0;
     angle_pid_param.PID_OUT_LIMIT_MAX=0.0;
     //速度环参数初始化
     speed_pid_param.kp=0.0;
     speed_pid_param.ki=0.0;
     speed_pid_param.kd=0.0;
+    speed_pid_param.out=0.0;
+    speed_pid_param.ek=0.0;
     speed_pid_param.PID_I_LIMIT_MAX=0.0;
     speed_pid_param.PID_OUT_LIMIT_MAX=0.0;
     //转向环参数初始化
@@ -58,6 +66,10 @@ void pid_init(void)
     turn_pid_param.kp2=0.0;
     turn_pid_param.kd=0.0;
     turn_pid_param.kd2=0.0;
+    turn_pid_param.out=0.0;
+    turn_pid_param.ek=0.0;
+    turn_pid_param.ek1=0.0;
+    turn_pid_param.location_sum=0.0;
     turn_pid_param.PID_OUT_LIMIT_MAX=0.0;
 }
 
