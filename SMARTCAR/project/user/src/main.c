@@ -48,6 +48,7 @@
 #include "imu.h"
 #include "encoder.h"
 #include "pid.h"
+#include "motor.h"
 
 //指示灯以及蜂鸣器
 #define LED1                    (H2 )
@@ -71,7 +72,8 @@ int main(void)
     menu_init();//菜单初始化
     pid_init();//PID初始化
     image_init();//图像采样初始化
-    encoder_init();//编码器初始化 
+    encoder_init();//编码器初始化
+    motor_init();//电机初始化
     
     gpio_init(BEEP, GPO, GPIO_LOW, GPO_PUSH_PULL);//蜂鸣器初始化
     gpio_init(LED1, GPO, GPIO_HIGH, GPO_PUSH_PULL);//指示灯初始化
