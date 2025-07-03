@@ -11,4 +11,8 @@ typedef struct {
 
 extern float filtering_angle;
 
+void imu_init(void);
+
+void first_order_filtering(void);
+
 #endif 

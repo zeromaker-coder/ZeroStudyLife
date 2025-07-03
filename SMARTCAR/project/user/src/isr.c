@@ -55,7 +55,11 @@ void TIM1_UP_IRQHandler (void)
 void TIM2_IRQHandler (void)
 {
     // 此处编写用户代码
-
+    extern void menu_imu_pit_handler(void);                                     // 菜单 IMU 角度获取定时器中断处理函数
+    if(car_go)
+    {
+        menu_imu_pit_handler();                                                      // 调用菜单 IMU 角度获取
+    }
     // 此处编写用户代码
     TIM2->SR &= ~TIM2->SR;                                                      // 清空中断状态
 }
@@ -104,7 +108,7 @@ void TIM6_IRQHandler (void)
 {
     // 此处编写用户代码
     extern void pit_handler(void);                                             // PIT 定时器中断处理函数
-    if(car_go)
+    if(!car_go)
     {
         pit_handler();                                                             // 调用 PIT 定时器中断处理函数
     }

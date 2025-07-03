@@ -51,13 +51,15 @@
 #include "motor.h"
 
 //指示灯以及蜂鸣器
-#define LED1                    (H2 )
-#define LED2                    (B13)
 #define BEEP                    (D7 )       // 蜂鸣器接口
 
 //角速度环定时器
 #define PIT                     (TIM6_PIT )                                     // 使用的周期中断编号 如果修改 需要同步对应修改周期中断编号与 isr.c 中的调用
 #define PIT_PRIORITY            (TIM6_IRQn)                                     // 对应周期中断的中断编号 在 mm32f3277gx.h 头文件中查看 IRQn_Type 枚举体
+
+//菜单角度信息获取
+#define menu_imu_PIT            (TIM2_PIT )                                     
+#define menu_imu_PIT_PRIORITY   (TIM2_IRQn)                                     
 
 
 uint32 system_count;//系统计数器
@@ -74,21 +76,21 @@ int main(void)
     image_init();//图像采样初始化
     encoder_init();//编码器初始化
     motor_init();//电机初始化
+    imu_init();//IMU初始化
     
     gpio_init(BEEP, GPO, GPIO_LOW, GPO_PUSH_PULL);//蜂鸣器初始化
-    gpio_init(LED1, GPO, GPIO_HIGH, GPO_PUSH_PULL);//指示灯初始化
-    gpio_init(LED2, GPO, GPIO_HIGH, GPO_PUSH_PULL);
 
     pit_ms_init(PIT,1);//周期中断初始化，1ms周期
+    pit_ms_init(menu_imu_PIT,5);//5ms获取一次角度数据
 
     //设置中断优先级，0为最高
     interrupt_set_priority(PIT_PRIORITY,0);
+    interrupt_set_priority(menu_imu_PIT_PRIORITY,0);
     
     gpio_set_level(BEEP, GPIO_HIGH);                                            // BEEP 响
     system_delay_ms(100);
     gpio_set_level(BEEP, GPIO_LOW);                                             // BEEP 停
     system_delay_ms(100);
-
 
 
     while(1)
@@ -127,10 +129,14 @@ void pit_handler(void)
 {
     system_count++;//系统计数器
 
+    imu660ra_get_acc();                                                         // 获取 IMU660RA 的加速度测量数值
+    imu660ra_get_gyro();                                                        // 获取 IMU660RA 的角速度测量数值
+
     gyro_pid_location();//角速度环
 
     if(system_count%5==0)
     {
+        first_order_filtering();                                                    // 一阶互补滤波解算姿态
         angle_pid_location();//角度环
     }
     
@@ -139,5 +145,13 @@ void pit_handler(void)
         encoder_read();//编码器读取
         speed_pid_loacation();//速度环
     }
+}
+
+
+void menu_imu_pit_handler(void)
+{
+    imu660ra_get_acc();                                                         // 获取 IMU660RA 的加速度测量数值
+    imu660ra_get_gyro();                                                        // 获取 IMU660RA 的角速度测量数值
+    first_order_filtering();                                                    // 一阶互补滤波解算姿态
 }
 

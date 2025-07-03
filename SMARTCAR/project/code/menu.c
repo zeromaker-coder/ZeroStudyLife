@@ -1207,7 +1207,7 @@ void image_menu(void)
     //显示数字
     ips200_show_int(150,150,encoder_data_left,3);
     ips200_show_int(150,150+16,encoder_data_right,3);
-    ips200_show_float(150,150+16*2,filtering_angle,3,1);
+    ips200_show_float(150,150+16*2,filtering_angle,6,1);
     ips200_show_uint(150,150+16*3,image_threshold,3);
 
     key_clear_state(KEY_4);//清除按键状态

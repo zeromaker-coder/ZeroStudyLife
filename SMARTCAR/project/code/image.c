@@ -68,7 +68,8 @@ void image_init(void)
         }
         system_delay_ms(500);                                                   // 短延时快速闪灯表示异常
     }
-    ips200_show_string(0, 16, "init success.");
+    ips200_show_string(0, 16, "mt9v03x init success.");
+    system_delay_ms(100);//延时100ms等待摄像头稳定                                                  
     ips200_clear();
 }
 
