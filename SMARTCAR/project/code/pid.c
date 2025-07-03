@@ -3,6 +3,7 @@
 #include "image.h"
 #include "encoder.h"
 #include "math.h"
+#include "flash.h"
 
 //定义结构体
 PID_LocTypeDef gyro_pid_param;//角速度环结构体
@@ -35,42 +36,52 @@ float turn_pid_out;//转向环输出
 */
 void pid_init(void)
 {
+    menu_load();//加载菜单参数
     //角速度环参数初始化
-    gyro_pid_param.kp=0.0;
-    gyro_pid_param.ki=0.0;
-    gyro_pid_param.kd=0.0;
     gyro_pid_param.out=0.0;
     gyro_pid_param.ek=0.0;
     gyro_pid_param.ek1=0.0;
     gyro_pid_param.location_sum=0.0;
-    gyro_pid_param.PID_I_LIMIT_MAX=0.0;
-    gyro_pid_param.PID_OUT_LIMIT_MAX=0.0;
     //角度环参数初始化
-    angle_pid_param.kp=0.0;
-    angle_pid_param.ki=0.0;
-    angle_pid_param.kd=0.0;
     angle_pid_param.out=0.0;
     angle_pid_param.ek=0.0;
     angle_pid_param.PID_I_LIMIT_MAX=0.0;
     angle_pid_param.PID_OUT_LIMIT_MAX=0.0;
     //速度环参数初始化
-    speed_pid_param.kp=0.0;
-    speed_pid_param.ki=0.0;
-    speed_pid_param.kd=0.0;
     speed_pid_param.out=0.0;
     speed_pid_param.ek=0.0;
-    speed_pid_param.PID_I_LIMIT_MAX=0.0;
-    speed_pid_param.PID_OUT_LIMIT_MAX=0.0;
     //转向环参数初始化
-    turn_pid_param.kp=0.0;
-    turn_pid_param.kp2=0.0;
-    turn_pid_param.kd=0.0;
-    turn_pid_param.kd2=0.0;
     turn_pid_param.out=0.0;
     turn_pid_param.ek=0.0;
     turn_pid_param.ek1=0.0;
     turn_pid_param.location_sum=0.0;
-    turn_pid_param.PID_OUT_LIMIT_MAX=0.0;
+}
+
+/**
+* @brief  PID中间变量清零
+* @param   无
+*/
+void pid_clear_all(void)
+{
+    gyro_pid_param.out=0.0;
+    gyro_pid_param.ek=0.0;
+    gyro_pid_param.ek1=0.0;
+    gyro_pid_param.location_sum=0.0;
+
+    angle_pid_param.out=0.0;
+    angle_pid_param.ek=0.0;
+    angle_pid_param.location_sum=0.0;
+    angle_pid_param.ek1=0.0;
+
+    speed_pid_param.out=0.0;
+    speed_pid_param.ek=0.0;
+    speed_pid_param.location_sum=0.0;
+    speed_pid_param.ek1=0.0;
+
+    turn_pid_param.out=0.0;
+    turn_pid_param.ek=0.0;
+    turn_pid_param.ek1=0.0;
+    turn_pid_param.location_sum=0.0;
 }
 
 

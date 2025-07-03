@@ -95,9 +95,7 @@ void main_menu(void)
         switch(sec_menu_item)
         {
             case 1:
-                // 进入小车发车菜单
                 beep_on();
-                system_delay_ms(50);
                 ips200_clear();
                 car_go=1;//小车发车
                 break;

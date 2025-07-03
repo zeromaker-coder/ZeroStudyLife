@@ -13,6 +13,8 @@ void turn_pid_location(void);
 
 void pid_init(void);
 
+void pid_clear_all(void);
+
 
 typedef struct
 {

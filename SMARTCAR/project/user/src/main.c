@@ -95,6 +95,8 @@ int main(void)
     {
         image_count++;
 
+        key_scanner();//按键扫描
+
         if(image_count%5==0)
         {
             image_threshold=otsu_get_threshold(mt9v03x_image, MT9V03X_W, MT9V03X_H);//图像获取阈值
@@ -104,7 +106,19 @@ int main(void)
         {
             menu();
         }
-        
+        else
+        {
+            if(KEY_SHORT_PRESS==key_get_state(KEY_1))//按键1短按
+            {
+                car_go=0;//停止
+                main_menu_item=1;
+                sec_menu_item=1;
+                pid_clear_all();
+                key_clear_all_state();//清除按键状态
+                beep_on();//蜂鸣器响
+            }
+        }
+
         beep_cycle();
     }
 }
