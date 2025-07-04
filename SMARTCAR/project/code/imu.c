@@ -65,7 +65,7 @@ void first_order_filtering(void)
     float gyro_temp;
 	float acc_temp;
 	gyro_temp=gy*gyro_ration;
-	acc_temp=(ax-angle_temp)*acc_ration;
+	acc_temp=(-ax-angle_temp)*acc_ration;
 	angle_temp+=((gyro_temp+acc_temp)*cycle_T);
 	filtering_angle=angle_temp;                                                       
 }
