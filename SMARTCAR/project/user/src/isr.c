@@ -35,6 +35,8 @@
 
 #include "isr.h"
 #include "menu.h"
+#include "pid.h"
+#include "motor.h"
 
 //-------------------------------------------------------------------------------------------------------------------
 // 函数简介     TIM1 的定时器更新中断服务函数 启动 .s 文件定义 不允许修改函数名称
@@ -56,7 +58,7 @@ void TIM2_IRQHandler (void)
 {
     // 此处编写用户代码
     extern void menu_imu_pit_handler(void);                                     // 菜单 IMU 角度获取定时器中断处理函数
-    if(car_go)
+    if(!car_go)
     {
         menu_imu_pit_handler();                                                      // 调用菜单 IMU 角度获取
     }
@@ -108,11 +110,15 @@ void TIM6_IRQHandler (void)
 {
     // 此处编写用户代码
     extern void pit_handler(void);                                             // PIT 定时器中断处理函数
-    if(!car_go)
+    if(car_go)
     {
         pit_handler();                                                             // 调用 PIT 定时器中断处理函数
     }
-    
+    else
+    {
+        pid_clear_all();
+        motor_set_duty(0, 0);                                                    // 停止电机
+    }
     // 此处编写用户代码
     TIM6->SR &= ~TIM6->SR;                                                      // 清空中断状态
 }

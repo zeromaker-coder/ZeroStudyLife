@@ -45,8 +45,6 @@ void pid_init(void)
     //角度环参数初始化
     angle_pid_param.out=0.0;
     angle_pid_param.ek=0.0;
-    angle_pid_param.PID_I_LIMIT_MAX=0.0;
-    angle_pid_param.PID_OUT_LIMIT_MAX=0.0;
     //速度环参数初始化
     speed_pid_param.out=0.0;
     speed_pid_param.ek=0.0;
@@ -169,7 +167,7 @@ void gyro_pid_location(void)
 */
 void angle_pid_location(void)
 {
-    angle_pid_out=PID_D_Pre_location(speed_pid_out+user_param.mid_angle,filtering_angle,imu660ra_gyro_y,angle_pid_pin);//角度环
+    angle_pid_out=-PID_D_Pre_location(speed_pid_out+user_param.mid_angle,filtering_angle,imu660ra_gyro_y,angle_pid_pin);//角度环
 }
 
 /**

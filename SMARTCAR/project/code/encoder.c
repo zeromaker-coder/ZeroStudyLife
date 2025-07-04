@@ -32,6 +32,6 @@ void encoder_read(void)
     encoder_data_left  = encoder_get_count(ENCODER_1);                              // 获取左编码器计数
     encoder_clear_count(ENCODER_1);                                             // 清空左编码器计数
 
-    encoder_data_right  = encoder_get_count(ENCODER_2);                              // 获取右编码器计数
+    encoder_data_right  = -encoder_get_count(ENCODER_2);                              // 获取右编码器计数
     encoder_clear_count(ENCODER_2);                                             // 清空右编码器计数
 }

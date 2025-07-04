@@ -55,6 +55,10 @@ extern PID_LocTypeDef angle_pid_param;
 extern PID_LocTypeDef speed_pid_param;
 extern Turn_PPDD_LocTypeDef turn_pid_param;
 extern USER_PARAM_LocTypeDef user_param;
+extern float gyro_pid_out;
+extern float angle_pid_out;
+extern float speed_pid_out;
+extern float turn_pid_out;
 
 
 

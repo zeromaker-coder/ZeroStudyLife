@@ -64,6 +64,7 @@
 
 uint32 system_count;//系统计数器
 uint32 image_count;//图像采样计数器
+uint8 data_buffer[32];//无线转串口数据缓冲区
 
 int main(void)
 {
@@ -77,6 +78,8 @@ int main(void)
     encoder_init();//编码器初始化
     motor_init();//电机初始化
     imu_init();//IMU初始化
+    wireless_uart_init();//无线转串口初始化
+
     
     gpio_init(BEEP, GPO, GPIO_LOW, GPO_PUSH_PULL);//蜂鸣器初始化
 
@@ -107,6 +110,8 @@ int main(void)
         if(!car_go)
         {
             menu();
+            sprintf(data_buffer,"%.1f\r\n",filtering_angle);
+            wireless_uart_send_string(data_buffer);//发送角度信息
         }
         else
         {
@@ -133,6 +138,8 @@ void pit_handler(void)
     imu660ra_get_gyro();                                                        // 获取 IMU660RA 的角速度测量数值
 
     gyro_pid_location();//角速度环
+    
+    motor_set_duty(gyro_pid_out,gyro_pid_out);//电机输出
 
     if(system_count%5==0)
     {
@@ -152,6 +159,7 @@ void menu_imu_pit_handler(void)
 {
     imu660ra_get_acc();                                                         // 获取 IMU660RA 的加速度测量数值
     imu660ra_get_gyro();                                                        // 获取 IMU660RA 的角速度测量数值
+    encoder_read();                                                        // 编码器读取
     first_order_filtering();                                                    // 一阶互补滤波解算姿态
 }
 

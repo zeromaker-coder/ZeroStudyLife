@@ -28,8 +28,12 @@ void motor_init(void)
   */
 void motor_set_duty(int16 motor_left, int16 motor_right)
 {
+    //电机极性反转
+    motor_left = -motor_left;                                                      
+    motor_right = -motor_right;
+      
     // 左电机
-    //输出限幅
+    //输出限幅                                               
     if(motor_left>10000)motor_left=10000;
     else if(motor_left<-10000)motor_left=-10000;
     
