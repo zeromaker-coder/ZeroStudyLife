@@ -1197,6 +1197,8 @@ void Sec_Menu_05(void)
 void image_menu(void)
 {
 	static uint8 image_flag=1;//图像显示类型
+    //显示边线以及中线
+    show_boundary_line();
     //显示字符
     ips200_show_string(0,0,"Real_image&binary_image:");
     ips200_show_string(0,150,"encoder_left:");

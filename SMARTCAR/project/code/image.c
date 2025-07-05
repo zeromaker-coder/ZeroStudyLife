@@ -70,8 +70,29 @@ void image_init(void)
     }
     ips200_show_string(0, 16, "mt9v03x init success.");
     system_delay_ms(100);//延时100ms等待摄像头稳定                                                  
-    ips200_clear();
 }
+
+/**
+* @brief  数据初始化
+*/
+void boundary_line_init(void)
+{
+    for(int i=0;i<MT9V03X_H;i++)
+    {
+        left_line[i]=0;
+        right_line[i]=MT9V03X_W-1;
+        mid_line[i]=(left_line[i]+right_line[i])/2;
+        left_lost_flag[i]=0;
+        right_lost_flag[i]=0;
+    }
+    boundary_start_left=0;
+    boundary_start_right=MT9V03X_W-1;
+    left_down_point=0;
+    left_up_point=0;
+    right_down_point=0;
+    right_up_point=0;
+}
+
 
 /**
 * @brief  摄像头原始图像显示函数
@@ -103,6 +124,19 @@ void show_binary_image(uint16 x, uint16 y,uint8 threshold)
 			ips200_show_gray_image(x, y, (const uint8 *)image_copy, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, threshold);
 			mt9v03x_finish_flag=0;
 		}
+}
+
+/**
+* @brief  边线数组以及中线数组显示函数
+*/
+void show_boundary_line(void)
+{
+    for(int i=30;i<30+MT9V03X_H;i++)
+    {
+        ips200_draw_point(left_line[i-30],i,RGB565_RED);
+        ips200_draw_point(right_line[i-30],i,RGB565_RED);
+        ips200_draw_point(mid_line[i-30],i,RGB565_GREEN);
+    }
 }
 
 /**

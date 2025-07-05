@@ -79,6 +79,7 @@ int main(void)
     motor_init();//电机初始化
     imu_init();//IMU初始化
     wireless_uart_init();//无线转串口初始化
+    boundary_line_init();//边界线初始化
 
     
     gpio_init(BEEP, GPO, GPIO_LOW, GPO_PUSH_PULL);//蜂鸣器初始化

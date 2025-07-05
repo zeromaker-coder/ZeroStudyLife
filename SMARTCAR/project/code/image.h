@@ -13,6 +13,10 @@ void show_binary_image(uint16 x, uint16 y,uint8 threshold);
 
 void image_binary(uint8 *in_image,unsigned char *out_image);
 
+void show_boundary_line(void);
+
+void boundary_line_init(void);
+
 extern uint8 binary_image[MT9V03X_H][MT9V03X_W];
 
 extern uint8 image_threshold;
