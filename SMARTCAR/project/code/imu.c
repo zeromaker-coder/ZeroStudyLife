@@ -1,12 +1,16 @@
 #include "imu.h"
+#include "math.h"
+#include "menu.h"
+#include "pid.h"
+#include "beep.h"
 
 uint8_t acc_ration=4;    //加速度计置信度
 uint8_t gyro_ration=4;   //陀螺仪置信度
 float filtering_angle=0; //解算出的角度
 float angle_temp;        //角度计算中间变量
 float cycle_T=0.005;         //采样周期
-
 imu_err_typdef imu_err; //imu误差结构体
+uint16 az_last=0; //上次加速度计Z轴数据
 
 /**
 * @brief   imu初始化
@@ -67,6 +71,42 @@ void first_order_filtering(void)
 	gyro_temp=gy*gyro_ration;
 	acc_temp=(-ax-angle_temp)*acc_ration;
 	angle_temp+=((gyro_temp+acc_temp)*cycle_T);
-	filtering_angle=angle_temp;                                                       
+	filtering_angle=angle_temp;                                                     
 }
+
+
+/**
+* @brief   提起保护处理函数
+* @param   无
+*/
+void lift_protection(void)
+{
+    int16 gx,gy,gz,ax,ay,az;
+    //临时变量存储                                                      
+    gx=imu660ra_gyro_x;
+    gy=imu660ra_gyro_y;
+    gz=imu660ra_gyro_z;                                                        
+    ax=imu660ra_acc_x;
+    ay=imu660ra_acc_y;
+    az=imu660ra_acc_z;
+
+    uint8 acc_abnormal=abs(az-az_last)>8000; //加速度异常标志
+
+    if(acc_abnormal) //如果加速度异常或角度异常
+    {
+        ips200_show_string(0, 0, "Lift protection!"); //显示提起保护信息
+        system_delay_ms(20); 
+        ips200_clear(); //清屏
+        car_go=0;//停止
+        main_menu_item=1;
+        sec_menu_item=1;
+        pid_clear_all();
+        key_clear_all_state();//清除按键状态
+        beep_on();//蜂鸣器响
+    }
+
+    az_last=az; //保存上次加速度计Z轴数据
+}
+
+
 

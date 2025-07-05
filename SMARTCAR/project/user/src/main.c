@@ -110,8 +110,8 @@ int main(void)
         if(!car_go)
         {
             menu();
-            sprintf(data_buffer,"%.1f\r\n",filtering_angle);
-            wireless_uart_send_string(data_buffer);//发送角度信息
+            // sprintf(data_buffer,"%.1f\r\n",filtering_angle);
+            // wireless_uart_send_string(data_buffer);//发送角度信息
         }
         else
         {
@@ -150,6 +150,7 @@ void pit_handler(void)
     if(system_count%20==0)
     {
         encoder_read();//编码器读取
+        motor_speed_protection();//电机速度保护
         speed_pid_loacation();//速度环
     }
 }

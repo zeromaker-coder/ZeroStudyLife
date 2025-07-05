@@ -15,4 +15,6 @@ void imu_init(void);
 
 void first_order_filtering(void);
 
+void lift_protection(void);
+
 #endif 

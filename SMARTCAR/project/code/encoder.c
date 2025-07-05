@@ -10,6 +10,8 @@
 
 int16 encoder_data_left = 0;
 int16 encoder_data_right = 0;
+int16 encoder_data_left_last = 0;                                          // 左编码器上次计数
+int16 encoder_data_right_last = 0;                                         // 右编码器上次计
 
 /**
   * @brief  编码器初始化
@@ -30,8 +32,10 @@ void encoder_init(void)
 void encoder_read(void)
 {
     encoder_data_left  = encoder_get_count(ENCODER_1);                              // 获取左编码器计数
+    encoder_data_left_last = encoder_data_left;                                   // 保存左编码器上次计数
     encoder_clear_count(ENCODER_1);                                             // 清空左编码器计数
 
     encoder_data_right  = -encoder_get_count(ENCODER_2);                              // 获取右编码器计数
+    encoder_data_right_last = encoder_data_right;                                 // 保存右编码器上次计数
     encoder_clear_count(ENCODER_2);                                             // 清空右编码器计数
 }

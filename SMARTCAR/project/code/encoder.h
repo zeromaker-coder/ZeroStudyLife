@@ -11,4 +11,8 @@ extern int16 encoder_data_left;
 
 extern int16 encoder_data_right;
 
+extern int16 encoder_data_left_last; 
+
+extern int16 encoder_data_right_last; 
+
 #endif

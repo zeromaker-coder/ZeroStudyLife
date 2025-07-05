@@ -1,4 +1,11 @@
 #include "motor.h"
+#include "pid.h"
+#include "menu.h"
+#include "beep.h"
+#include "encoder.h"
+#include "math.h"
+
+uint8 motor_speed_count = 0;                                                   // 电机速度计数器
 
 
 #define MAX_DUTY            (50 )                                               // 最大 MAX_DUTY% 占空比
@@ -62,6 +69,33 @@ void motor_set_duty(int16 motor_left, int16 motor_right)
     {
         gpio_set_level(DIR_R, GPIO_LOW);                                        // 反转
         pwm_set_duty(PWM_R, (-motor_right) * (PWM_DUTY_MAX / 10000));
+    }
+}
+
+
+/**
+  * @brief  电机过快保护
+  * @param  无
+  */
+void motor_speed_protection(void)
+{
+    if(gyro_pid_out > 4500||abs(encoder_data_left-encoder_data_left_last)>35||abs(encoder_data_right-encoder_data_right_last)>35) // 如果 PID 输出大于最大占空比
+    {
+        motor_speed_count++; // 电机速度计数器加 1
+        if(motor_speed_count > 2)
+        {
+            car_go=0;//停止
+            main_menu_item=1;
+            sec_menu_item=1;
+            pid_clear_all();
+            key_clear_all_state();//清除按键状态
+            motor_speed_count=0;
+            beep_on();//蜂鸣器响
+        }
+    }
+    else
+    {
+        motor_speed_count = 0; // 重置电机速度计数器
     }
 }
 
