@@ -103,6 +103,11 @@ int main(void)
 
         key_scanner();//按键扫描
 
+        image_binary(mt9v03x_image,binary_image);//图像二值化
+
+        longest_white_sweep_line(binary_image);//图像扫线
+
+
         if(image_count%5==0)
         {
             image_threshold=otsu_get_threshold(mt9v03x_image, MT9V03X_W, MT9V03X_H);//图像获取阈值

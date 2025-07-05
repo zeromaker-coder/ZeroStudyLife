@@ -134,8 +134,16 @@ void show_boundary_line(void)
     for(int i=30;i<30+MT9V03X_H;i++)
     {
         ips200_draw_point(left_line[i-30],i,RGB565_RED);
+        ips200_draw_point(left_line[i-30]+1,i,RGB565_RED);
+        ips200_draw_point(left_line[i-30]+2,i,RGB565_RED);
+
         ips200_draw_point(right_line[i-30],i,RGB565_RED);
+        ips200_draw_point(right_line[i-30]-1,i,RGB565_RED);
+        ips200_draw_point(right_line[i-30]-2,i,RGB565_RED);
+
         ips200_draw_point(mid_line[i-30],i,RGB565_GREEN);
+        ips200_draw_point(mid_line[i-30]-1,i,RGB565_GREEN);
+        ips200_draw_point(mid_line[i-30]+1,i,RGB565_GREEN);
     }
 }
 
@@ -256,32 +264,21 @@ int otsu_get_threshold(uint8 *image, uint16 col, uint16 row)
 * @param   *in_image  压缩后图像
 * @param   *out_image 二值化图像
 */
-void image_binary(uint8 *in_image,unsigned char *out_image)
+void image_binary(uint8 *in_image,uint8 *out_image)
 {
-    unsigned char x, y;
-    unsigned char final_threshold,threshold;
-    unsigned int  temp;
-
-    threshold = (otsu_get_threshold(in_image,DEAL_IMAGE_W, DEAL_IMAGE_H));
-    for (y = 0; y < DEAL_IMAGE_H; y++)
+    uint8 i, j;
+    for (i = 0; i < DEAL_IMAGE_H; i++)
     {
-        temp = DEAL_IMAGE_W*y;
-        for (x = 0; x < DEAL_IMAGE_W; x++)
+        for (j = 0; j < DEAL_IMAGE_W; j++)
         {
-            // if (y <= 15)
-            //      final_threshold = threshold + 20;
-            //  else if (y >= 40)
-            //      final_threshold = threshold + 10;
-            //  else if (y >= 50)
-            //      final_threshold = threshold - 10;
-            //  else
-            //      final_threshold = threshold;
-            final_threshold = threshold;
-            // if(final_threshold<80) final_threshold=80;
-            if ( *(in_image+temp+x) > final_threshold)
-                *(out_image+temp+x) = 1;  // 白
+            if (*(in_image + DEAL_IMAGE_W * i + j) >= image_threshold)
+            {
+                *(out_image + DEAL_IMAGE_W * i + j) = 1; //白色
+            }
             else
-                *(out_image+temp+x) = 0;  // 黑
+            {
+                *(out_image + DEAL_IMAGE_W * i + j) = 0; //黑色
+            }
         }
     }
 }
@@ -329,16 +326,19 @@ void longest_white_sweep_line(uint8 image[DEAL_IMAGE_H][DEAL_IMAGE_W])
     longest_white_left[1] = 0;
     longest_white_right[0] = 0;
     longest_white_right[1] = 0;
+    left_lost_count=0;
+    right_lost_count=0;
+    left_right_lost_count=0;
     boundary_start_left=0;
     boundary_start_right=0;
-    for(i=0;i<DEAL_IMAGE_H-1;i++)
+    for(i=0;i<=DEAL_IMAGE_H-1;i++)
     {
         left_line[i]=0;
         right_line[i]=DEAL_IMAGE_W-1;
         left_lost_flag[i]=0;
         right_lost_flag[i]=0;
     }
-    for(i=0;i<DEAL_IMAGE_W-1;i++)
+    for(i=0;i<=DEAL_IMAGE_W-1;i++)
     {
         white_count[i]=0;
     }
@@ -347,12 +347,12 @@ void longest_white_sweep_line(uint8 image[DEAL_IMAGE_H][DEAL_IMAGE_W])
     {
         for(i=DEAL_IMAGE_H-1;i>=0;i--)
         {
-            if(image[i][j] == 1)break;//黑点跳出
+            if(image[i][j] == 0)break;//黑点跳出
             else white_count[j]++;//白点计数
         }
     }
     //寻找左最长白列
-    for(i=start_point;i<end_point;i+=2)
+    for(i=start_point;i<end_point;i+=1)
     {
         if( longest_white_left[0] < white_count[i])//找最长的那一列，寻到右边界
         {
@@ -361,7 +361,7 @@ void longest_white_sweep_line(uint8 image[DEAL_IMAGE_H][DEAL_IMAGE_W])
         }
     }
     //寻找右最长白列
-    for(i=end_point;i>=longest_white_left[1];i-=2)//从右往左，找到右最长白列，寻到左边最长白列位置
+    for(i=end_point;i>=longest_white_left[1];i-=1)//从右往左，找到右最长白列，寻到左边最长白列位置
     {
         if( longest_white_right[0] < white_count[i])//找最长的那一列
         {
@@ -373,7 +373,7 @@ void longest_white_sweep_line(uint8 image[DEAL_IMAGE_H][DEAL_IMAGE_W])
     search_stop_line = (longest_white_left[0]>longest_white_right[0])?longest_white_left[0]:longest_white_right[0];//非常重要，搜索截止行存储
 
     //巡线
-    for(i = DEAL_IMAGE_H-1;i>=DEAL_IMAGE_H-search_stop_line;i--)
+    for(i = DEAL_IMAGE_H-1;i>=DEAL_IMAGE_H-search_stop_line&&i>=0;i--)
     {
         for(j = longest_white_right[1]; j<=DEAL_IMAGE_W-1-2;j++)//从右最长白列找右边
         {
@@ -407,7 +407,7 @@ void longest_white_sweep_line(uint8 image[DEAL_IMAGE_H][DEAL_IMAGE_W])
         }
         left_line[i]=left_border;//存储左边线
         right_line[i]=right_border;//存储右边线
-        
+        mid_line[i]=(left_line[i]+right_line[i])/2;//存储中线
     }
     //记录丢边情况
     for(i=DEAL_IMAGE_H-1;i>=DEAL_IMAGE_H-search_stop_line;i--)
