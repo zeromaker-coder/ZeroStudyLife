@@ -661,7 +661,7 @@ void Sec_Menu_04(void)
     ips200_show_string(16,30+16*0,"turn_kp:");//转向环kp
     ips200_show_string(16,30+16*1,"turn_kp2:");//转向环kp2
     ips200_show_string(16,30+16*2,"turn_kd:");//转向环kd
-    ips200_show_string(16,30+16*3,"turn_kp2:");//转向环kd2
+    ips200_show_string(16,30+16*3,"turn_kd2:");//转向环kd2
     ips200_show_string(16,30+16*4,"back");//返回上一级菜单
     ips200_show_string(16,30+16*10,"change_item:");//修改量
 

@@ -123,6 +123,10 @@ int main(void)
                 pid_clear_all();
                 key_clear_all_state();//清除按键状态
                 beep_on();//蜂鸣器响
+                encoder_data_left_last=0;
+                encoder_data_right_last=0; // 重置编码器数据
+                encoder_data_left = 0;
+                encoder_data_right = 0; // 重置编码器数据
             }
         }
 
@@ -137,9 +141,11 @@ void pit_handler(void)
     imu660ra_get_acc();                                                         // 获取 IMU660RA 的加速度测量数值
     imu660ra_get_gyro();                                                        // 获取 IMU660RA 的角速度测量数值
 
+    turn_pid_location();//转向环
+
     gyro_pid_location();//角速度环
     
-    motor_set_duty(gyro_pid_out,gyro_pid_out);//电机输出
+    motor_set_duty(gyro_pid_out-turn_pid_out,gyro_pid_out+turn_pid_out);//电机输出
 
     if(system_count%5==0)
     {

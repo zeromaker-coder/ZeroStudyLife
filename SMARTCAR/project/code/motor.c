@@ -91,6 +91,10 @@ void motor_speed_protection(void)
             key_clear_all_state();//清除按键状态
             motor_speed_count=0;
             beep_on();//蜂鸣器响
+            encoder_data_left_last=0;
+            encoder_data_right_last=0; // 重置编码器数据
+            encoder_data_left = 0;
+            encoder_data_right = 0; // 重置编码器数据
         }
     }
     else
