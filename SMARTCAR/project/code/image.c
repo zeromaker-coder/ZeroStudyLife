@@ -472,6 +472,11 @@ void longest_white_sweep_line(uint8 image[DEAL_IMAGE_H][DEAL_IMAGE_W])
         }
         left_line[i]=left_border;//存储左边线
         right_line[i]=right_border;//存储右边线
+        if(left_down_point&&right_down_point&&left_up_point&&right_up_point)//如果四个拐点都存在
+        {
+            left_draw_line(left_line[left_up_point],left_up_point,left_line[left_down_point],left_down_point);//左边补线
+            right_draw_line(right_line[right_up_point],right_up_point,right_line[right_down_point],right_down_point);//右边补线
+        }
         mid_line[i]=(left_line[i]+right_line[i])/2;//存储中线
     }
     //记录丢边情况
@@ -651,23 +656,21 @@ void find_down_point(uint8 start_point,uint8 end_point)
             abs(left_line[i]-left_line[i+1])<=5&&
             abs(left_line[i+1]-left_line[i+2])<=5&&
             abs(left_line[i+2]-left_line[i+3])<=5&&
-            (left_line[i]-left_line[i-2])>=5&&
+            (left_line[i]-left_line[i-2])>=8&&
             (left_line[i]-left_line[i-3])>=10&&
-            (left_line[i]-left_line[i-4])>=10)
+            (left_line[i]-left_line[i-4])>=12)
             {
                 left_down_point=i;
-                break;
             }
         if(right_down_point==0&&
             abs(right_line[i]-right_line[i+1])<=5&&
             abs(right_line[i+1]-right_line[i+2])<=5&&
             abs(right_line[i+2]-right_line[i+3])<=5&&
-            (right_line[i]-right_line[i-2])<=-5&&
+            (right_line[i]-right_line[i-2])<=-8&&
             (right_line[i]-right_line[i-3])<=-10&&
-            (right_line[i]-right_line[i-4])<=-10)
+            (right_line[i]-right_line[i-4])<=-12)
             {
                 right_down_point=i;
-                break;
             }
         if(left_down_point!=0&&right_down_point!=0)
         {
@@ -711,23 +714,21 @@ void find_up_point(uint8 start_point,uint8 end_point)
             abs(left_line[i]-left_line[i-1])<=5&&
             abs(left_line[i-1]-left_line[i-2])<=5&&
             abs(left_line[i-2]-left_line[i-3])<=5&&
-            (left_line[i]-left_line[i+2])>=5&&
+            (left_line[i]-left_line[i+2])>=8&&
             (left_line[i]-left_line[i+3])>=10&&
-            (left_line[i]-left_line[i+4])>=10)
+            (left_line[i]-left_line[i+4])>=12)
             {
                 left_up_point=i;
-                break;
             }
         if(right_up_point==0&&
             abs(right_line[i]-right_line[i-1])<=5&&
             abs(right_line[i-1]-right_line[i-2])<=5&&
             abs(right_line[i-2]-right_line[i-3])<=5&&
-            (right_line[i]-right_line[i+2])<=-5&&
+            (right_line[i]-right_line[i+2])<=-8&&
             (right_line[i]-right_line[i+3])<=-10&&
-            (right_line[i]-right_line[i+4])<=-10)
+            (right_line[i]-right_line[i+4])<=-12)
             {
                 right_up_point=i;
-                break;
             }
         if(left_up_point!=0&&right_up_point!=0)
         {
