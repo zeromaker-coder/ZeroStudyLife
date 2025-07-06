@@ -138,13 +138,73 @@ void show_boundary_line(void)
 {
     for(int i=30;i<30+MT9V03X_H;i++)
     {
-        ips200_draw_point(left_line[i-30],i,RGB565_RED);
-        ips200_draw_point(left_line[i-30]+1,i,RGB565_RED);
-        ips200_draw_point(left_line[i-30]+2,i,RGB565_RED);
+        if((i-30)!=left_down_point&&(i-30)!=left_up_point)
+        {
+            ips200_draw_point(left_line[i-30],i,RGB565_RED);
+            ips200_draw_point(left_line[i-30]+1,i,RGB565_RED);
+            ips200_draw_point(left_line[i-30]+2,i,RGB565_RED);  
+        }
+        else
+        {
+            if((i-30)==left_down_point)
+            {
+                ips200_draw_point(left_line[i-30],i-1,RGB565_BLUE);
+                ips200_draw_point(left_line[i-30]+1,i-1,RGB565_BLUE);
+                ips200_draw_point(left_line[i-30]+2,i-1,RGB565_BLUE);
+                ips200_draw_point(left_line[i-30],i,RGB565_BLUE);
+                ips200_draw_point(left_line[i-30]+1,i,RGB565_BLUE);
+                ips200_draw_point(left_line[i-30]+2,i,RGB565_BLUE);
+                ips200_draw_point(left_line[i-30],i+1,RGB565_BLUE);
+                ips200_draw_point(left_line[i-30]+1,i+1,RGB565_BLUE);
+                ips200_draw_point(left_line[i-30]+2,i+1,RGB565_BLUE);
+            }
+            else
+            {
+                ips200_draw_point(left_line[i-30],i-1,RGB565_BLUE);
+                ips200_draw_point(left_line[i-30]+1,i-1,RGB565_BLUE);
+                ips200_draw_point(left_line[i-30]+2,i-1,RGB565_BLUE);
+                ips200_draw_point(left_line[i-30],i,RGB565_BLUE);
+                ips200_draw_point(left_line[i-30]+1,i,RGB565_BLUE);
+                ips200_draw_point(left_line[i-30]+2,i,RGB565_BLUE);
+                ips200_draw_point(left_line[i-30],i+1,RGB565_BLUE);
+                ips200_draw_point(left_line[i-30]+1,i+1,RGB565_BLUE);
+                ips200_draw_point(left_line[i-30]+2,i+1,RGB565_BLUE);
+            }
+        }
 
-        ips200_draw_point(right_line[i-30],i,RGB565_RED);
-        ips200_draw_point(right_line[i-30]-1,i,RGB565_RED);
-        ips200_draw_point(right_line[i-30]-2,i,RGB565_RED);
+        if((i-30)!=right_down_point&&(i-30)!=right_up_point)
+        { 
+            ips200_draw_point(right_line[i-30],i,RGB565_RED);
+            ips200_draw_point(right_line[i-30]-1,i,RGB565_RED);
+            ips200_draw_point(right_line[i-30]-2,i,RGB565_RED);
+        }
+        else
+        {
+            if((i-30)==right_down_point)
+            {
+                ips200_draw_point(right_line[i-30],i-1,RGB565_BLUE);
+                ips200_draw_point(right_line[i-30]-1,i-1,RGB565_BLUE);
+                ips200_draw_point(right_line[i-30]-2,i-1,RGB565_BLUE);
+                ips200_draw_point(right_line[i-30],i,RGB565_BLUE);
+                ips200_draw_point(right_line[i-30]-1,i,RGB565_BLUE);
+                ips200_draw_point(right_line[i-30]-2,i,RGB565_BLUE);
+                ips200_draw_point(right_line[i-30],i+1,RGB565_BLUE);
+                ips200_draw_point(right_line[i-30]-1,i+1,RGB565_BLUE);
+                ips200_draw_point(right_line[i-30]-2,i+1,RGB565_BLUE);
+            }
+            else
+            {
+                ips200_draw_point(right_line[i-30],i-1,RGB565_BLUE);
+                ips200_draw_point(right_line[i-30]-1,i-1,RGB565_BLUE);
+                ips200_draw_point(right_line[i-30]-2,i-1,RGB565_BLUE);
+                ips200_draw_point(right_line[i-30],i,RGB565_BLUE);
+                ips200_draw_point(right_line[i-30]-1,i,RGB565_BLUE);
+                ips200_draw_point(right_line[i-30]-2,i,RGB565_BLUE);
+                ips200_draw_point(right_line[i-30],i+1,RGB565_BLUE);
+                ips200_draw_point(right_line[i-30]-1,i+1,RGB565_BLUE);
+                ips200_draw_point(right_line[i-30]-2,i+1,RGB565_BLUE);
+            }
+        }
 
         ips200_draw_point(mid_line[i-30],i,RGB565_GREEN);
         ips200_draw_point(mid_line[i-30]-1,i,RGB565_GREEN);
@@ -439,6 +499,10 @@ float err_sum_average(uint8 start_point,uint8 end_point)
         end_point=start_point;
         start_point=t;
     }
+
+    if(start_point<DEAL_IMAGE_H-search_stop_line)start_point=DEAL_IMAGE_H-search_stop_line-1;//防止起点越界
+    if(end_point<DEAL_IMAGE_H-search_stop_line)end_point=DEAL_IMAGE_H-search_stop_line-2;//防止终点越界
+
     float err=0;
     for(int i=start_point;i<end_point;i++)
     {
@@ -562,13 +626,23 @@ void find_down_point(uint8 start_point,uint8 end_point)
     //参数清零
     left_down_point=0;
     right_down_point=0;
-    if(start_point>DEAL_IMAGE_H-5)
+    if(start_point<end_point)
     {
-        start_point=DEAL_IMAGE_H-5;
+        uint8 t=start_point;
+        start_point=end_point;
+        end_point=t;
+    }
+    if(start_point>DEAL_IMAGE_H-5-1)
+    {
+        start_point=DEAL_IMAGE_H-5-1;
     }
     if(end_point<DEAL_IMAGE_H-search_stop_line)
     {
         end_point=DEAL_IMAGE_H-search_stop_line;
+    }
+    if(end_point<5)
+    {
+        end_point=5;
     }
     for(int i=start_point;i>=end_point;i--)
     {
@@ -582,6 +656,7 @@ void find_down_point(uint8 start_point,uint8 end_point)
             (left_line[i]-left_line[i-4])>=10)
             {
                 left_down_point=i;
+                break;
             }
         if(right_down_point==0&&
             abs(right_line[i]-right_line[i+1])<=5&&
@@ -592,6 +667,7 @@ void find_down_point(uint8 start_point,uint8 end_point)
             (right_line[i]-right_line[i-4])<=-10)
             {
                 right_down_point=i;
+                break;
             }
         if(left_down_point!=0&&right_down_point!=0)
         {
@@ -610,39 +686,52 @@ void find_up_point(uint8 start_point,uint8 end_point)
 {
     left_up_point=0;
     right_up_point=0;
-    if(start_point<DEAL_IMAGE_H-search_stop_line+5)
+    if(start_point<end_point)
     {
-        start_point=DEAL_IMAGE_H-search_stop_line+5;
+        uint8 t=start_point;
+        start_point=end_point;
+        end_point=t;
     }
-    if(end_point>DEAL_IMAGE_H-5)
+    if(start_point>DEAL_IMAGE_H-5-1)
     {
-        end_point=DEAL_IMAGE_H-5;
+        start_point=DEAL_IMAGE_H-5-1;
     }
-    for(int i=start_point;i<end_point;i++)
+    if(end_point<DEAL_IMAGE_H-search_stop_line)
     {
+        end_point=DEAL_IMAGE_H-search_stop_line;
+    }
+    if(end_point<5)
+    {
+        end_point=5;
+    }
+    for(int i=start_point;i>=end_point;i--)
+    {
+        //点i下面2个连续相差不大并且点i与上面边3个点分别相差很大，认为有上左拐点
         if(left_up_point==0&&
-            abs(left_line[i]-left_line[i-1])<5&&
-            abs(left_line[i-1]-left_line[i-2])<5&&
-            abs(left_line[i-2]-left_line[i-3])<5&&
-            left_line[i+2]-left_line[i]<-5&&
-            left_line[i+3]-left_line[i]<-10&&
-            left_line[i+4]-left_line[i]<-10)
+            abs(left_line[i]-left_line[i-1])<=5&&
+            abs(left_line[i-1]-left_line[i-2])<=5&&
+            abs(left_line[i-2]-left_line[i-3])<=5&&
+            (left_line[i]-left_line[i+2])>=5&&
+            (left_line[i]-left_line[i+3])>=10&&
+            (left_line[i]-left_line[i+4])>=10)
             {
                 left_up_point=i;
+                break;
             }
         if(right_up_point==0&&
-            abs(right_line[i]-right_line[i-1])<5&&
-            abs(right_line[i-1]-right_line[i-2])<5&&
-            abs(right_line[i-2]-right_line[i-3])<5&&
-            right_line[i+2]-right_line[i]>5&&
-            right_line[i+3]-right_line[i]>10&&
-            right_line[i+4]-right_line[i]>10)
+            abs(right_line[i]-right_line[i-1])<=5&&
+            abs(right_line[i-1]-right_line[i-2])<=5&&
+            abs(right_line[i-2]-right_line[i-3])<=5&&
+            (right_line[i]-right_line[i+2])<=-5&&
+            (right_line[i]-right_line[i+3])<=-10&&
+            (right_line[i]-right_line[i+4])<=-10)
             {
                 right_up_point=i;
+                break;
             }
-        if(left_up_point!=0&&right_down_point!=0)
+        if(left_up_point!=0&&right_up_point!=0)
         {
             break;
-        }
+        }       
     }
 }

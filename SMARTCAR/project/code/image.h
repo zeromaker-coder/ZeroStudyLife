@@ -26,10 +26,36 @@ uint8 image_out_of_bounds(unsigned char in_image[DEAL_IMAGE_H][DEAL_IMAGE_W]);
 
 float err_sum_average(uint8 start_point,uint8 end_point);
 
+void find_down_point(uint8 start_point,uint8 end_point);
+
+void find_up_point(uint8 start_point,uint8 end_point);
+
+void left_draw_line(uint8 x1,uint8 y1,uint8 x2,uint8 y2);
+
+void right_draw_line(uint8 x1,uint8 y1,uint8 x2,uint8 y2);
+
+extern uint8 left_down_point;
+
+extern uint8 left_up_point;
+
+extern uint8 right_down_point;
+
+extern uint8 right_up_point;
+
 extern uint8 binary_image[MT9V03X_H][MT9V03X_W];
 
 extern uint8 image_threshold;
 
+extern uint8 left_line[MT9V03X_H];
+
+extern uint8 right_line[MT9V03X_H];
+
 extern float line_err;
+
+extern uint8 left_lost_count;
+
+extern uint8 right_lost_count;
+
+extern uint8 left_right_lost_count;
 
 #endif
