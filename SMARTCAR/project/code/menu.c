@@ -1205,12 +1205,14 @@ void image_menu(void)
     ips200_show_string(0,150+16,"encoder_right:");
     ips200_show_string(0,150+16*2,"angle:");
     ips200_show_string(0,150+16*3,"image_threshold:");
+    ips200_show_string(0,150+16*4,"line_err:");
 
     //显示数字
     ips200_show_int(150,150,encoder_data_left,3);
     ips200_show_int(150,150+16,encoder_data_right,3);
     ips200_show_float(150,150+16*2,filtering_angle,6,1);
     ips200_show_uint(150,150+16*3,image_threshold,3);
+    ips200_show_float(150,150+16*4,line_err,6,1);
 
     key_clear_state(KEY_4);//清除按键状态
 	key_scanner();//千万不要忘

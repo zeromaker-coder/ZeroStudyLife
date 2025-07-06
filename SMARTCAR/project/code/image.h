@@ -22,10 +22,14 @@ void boundary_line_init(void);
 
 void longest_white_sweep_line(uint8 image[DEAL_IMAGE_H][DEAL_IMAGE_W]);
 
+uint8 image_out_of_bounds(unsigned char in_image[DEAL_IMAGE_H][DEAL_IMAGE_W]);
+
+float err_sum_average(uint8 start_point,uint8 end_point);
+
 extern uint8 binary_image[MT9V03X_H][MT9V03X_W];
 
 extern uint8 image_threshold;
 
-extern uint8 line_err;
+extern float line_err;
 
 #endif

@@ -19,7 +19,7 @@ uint8 image_threshold;//图像阈值
 uint8 left_line[MT9V03X_H];//左边界数组
 uint8 right_line[MT9V03X_H];//右边界数组
 uint8 mid_line[MT9V03X_H];//中线数组
-uint8 line_err;//中线误差
+float line_err;//中线误差
 uint8 white_count[MT9V03X_W];//每一列的白列长度
 uint8 search_stop_line;//搜索截止行
 uint8 boundary_start_left;//左边界起点
@@ -39,6 +39,11 @@ uint8 right_up_point;//右上拐点
 //误差权重数组(后期使用)
 const uint8 weight[DEAL_IMAGE_H]= 
 {
+    0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,
     0,0,0,0,0,0,0,0,0,0,
     0,0,0,0,0,0,0,0,0,0,
     0,0,0,0,0,0,0,0,0,0,
@@ -163,7 +168,7 @@ uint8 image_out_of_bounds(unsigned char in_image[DEAL_IMAGE_H][DEAL_IMAGE_W])
         }
     }
     int average = sum / 30; // 计算平均值
-    if(average<50)
+    if(average<140)
     {
         return 1;
     }
@@ -457,10 +462,6 @@ float err_sum_weight(void)
     {
         err+=(DEAL_IMAGE_W/2-((left_line[i]+right_line[i])>>1)*weight[i]);//位操作等效除以2
         weight_sum+=weight[i];
-        if((i+2-DEAL_IMAGE_H)*sizeof(uint8)>sizeof(weight))
-        {
-            break;//越界跳出
-        }
     }
     err=err/weight_sum;
     return err;

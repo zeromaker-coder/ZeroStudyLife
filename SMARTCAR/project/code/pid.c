@@ -187,7 +187,7 @@ void speed_pid_loacation(void)
 */
 void turn_pid_location(void)
 {
-    turn_pid_out=PPDD_location(0,line_err,-imu660ra_gyro_z,turn_pid_pin);//转向环
+    turn_pid_out=-PPDD_location(0,line_err,imu660ra_gyro_z,turn_pid_pin);//转向环
 }
 
 
