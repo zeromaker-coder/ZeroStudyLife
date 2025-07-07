@@ -34,6 +34,8 @@ void left_draw_line(uint8 x1,uint8 y1,uint8 x2,uint8 y2);
 
 void right_draw_line(uint8 x1,uint8 y1,uint8 x2,uint8 y2);
 
+void cross_judge(void);
+
 extern uint8 left_down_point;
 
 extern uint8 left_up_point;

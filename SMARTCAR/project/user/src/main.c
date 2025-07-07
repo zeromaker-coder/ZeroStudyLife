@@ -105,21 +105,6 @@ int main(void)
 
         image_binary(mt9v03x_image,binary_image);//图像二值化
 
-        if(left_right_lost_count>15)
-        {
-            find_up_point(MT9V03X_H-1,0);//寻找上拐点
-
-            find_down_point(MT9V03X_H-1,left_up_point);//寻找下拐点
-
-            if(car_go)
-            {
-                if(right_down_point||right_up_point||left_down_point||left_up_point)//如果找到了拐点
-                {
-                    beep_on();//蜂鸣器响
-                } 
-            }
-        }
-
         longest_white_sweep_line(binary_image);//图像扫线
 
         line_err=err_sum_average(47, 52);//计算误差

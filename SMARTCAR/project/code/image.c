@@ -1,5 +1,7 @@
 #include "image.h"
 #include "math.h"
+#include "menu.h"
+#include "beep.h"
 #define DISPLAY_MODE                ( 1 )                                       // 显示模式 0-灰度显示 1-二值化显示
                                                                                 // 0-灰度显示   就是正常显示的总钻风图像
                                                                                 // 1-二值化显示 根据最后一个二值化阈值显示出对应的二值化图像
@@ -391,9 +393,6 @@ void longest_white_sweep_line(uint8 image[DEAL_IMAGE_H][DEAL_IMAGE_W])
     longest_white_left[1] = 0;
     longest_white_right[0] = 0;
     longest_white_right[1] = 0;
-    left_lost_count=0;
-    right_lost_count=0;
-    left_right_lost_count=0;
     boundary_start_left=0;
     boundary_start_right=0;
     for(i=0;i<=DEAL_IMAGE_H-1;i++)
@@ -472,13 +471,19 @@ void longest_white_sweep_line(uint8 image[DEAL_IMAGE_H][DEAL_IMAGE_W])
         }
         left_line[i]=left_border;//存储左边线
         right_line[i]=right_border;//存储右边线
-        if(left_down_point&&right_down_point&&left_up_point&&right_up_point)//如果四个拐点都存在
-        {
-            left_draw_line(left_line[left_up_point],left_up_point,left_line[left_down_point],left_down_point);//左边补线
-            right_draw_line(right_line[right_up_point],right_up_point,right_line[right_down_point],right_down_point);//右边补线
-        }
+    }
+
+    cross_judge();//判断十字
+
+    for(i = DEAL_IMAGE_H-1;i>=DEAL_IMAGE_H-search_stop_line&&i>=0;i--)
+    {
         mid_line[i]=(left_line[i]+right_line[i])/2;//存储中线
     }
+
+    //边界丢线清零
+    left_lost_count=0;
+    right_lost_count=0;
+    left_right_lost_count=0;
     //记录丢边情况
     for(i=DEAL_IMAGE_H-1;i>=DEAL_IMAGE_H-search_stop_line;i--)
     {
@@ -621,6 +626,98 @@ void right_draw_line(uint8 x1,uint8 y1,uint8 x2,uint8 y2)
 
 /**
 *
+* @brief  左边界延长
+* @param  start_point 延长起点
+* @param  end_point   延长终点
+**/
+void lenthen_left_line(uint8 start_point,uint8 end_point)
+{
+    float k;
+    //防止越界
+    if(start_point>=DEAL_IMAGE_H-1)start_point=DEAL_IMAGE_H-1;
+    if(start_point<0)start_point=0;
+    if(end_point>=DEAL_IMAGE_H-1)end_point=DEAL_IMAGE_H-1;
+    if(end_point<0)end_point=0;
+    
+    if(end_point<start_point)
+    {
+        uint8 t=start_point;
+        start_point=end_point;
+        end_point=t;
+    }
+
+    if(start_point<=5)//起点过于靠上，直接连线
+    {
+        left_draw_line(left_line[start_point],start_point,left_line[end_point],end_point);
+    }
+    else
+    {
+        k=(float)(left_line[start_point]-left_line[start_point-4])/5.0;//斜率
+        for(uint8 i=start_point;i<=end_point;i++)
+        {
+            left_line[i]=left_line[start_point]+(int)(i-start_point)*k;//使用斜率延长
+
+            if(left_line[i]<1)//防止越界
+            {
+                left_line[i]=1;
+            }
+
+            if(left_line[i]>=DEAL_IMAGE_W-2)//防止越界
+            {
+                left_line[i]=DEAL_IMAGE_W-2;
+            }
+        }
+    }
+}
+
+/**
+*
+* @brief  右边界延长
+* @param  start_point 延长起点
+* @param  end_point   延长终点
+**/
+void lenthen_right_line(uint8 start_point,uint8 end_point)
+{
+    float k;
+    //防止越界
+    if(start_point>=DEAL_IMAGE_H-1)start_point=DEAL_IMAGE_H-1;
+    if(start_point<0)start_point=0;
+    if(end_point>=DEAL_IMAGE_H-1)end_point=DEAL_IMAGE_H-1;
+    if(end_point<0)end_point=0;
+    
+    if(end_point<start_point)
+    {
+        uint8 t=start_point;
+        start_point=end_point;
+        end_point=t;
+    }
+
+    if(start_point<=5)//起点过于靠上，直接连线
+    {
+        left_draw_line(right_line[start_point],start_point,right_line[end_point],end_point);
+    }
+    else
+    {
+        k=(float)(right_line[start_point]-right_line[start_point-4])/5.0;//斜率
+        for(uint8 i=start_point;i<=end_point;i++)
+        {
+            right_line[i]=right_line[start_point]+(int)(i-start_point)*k;//使用斜率延长
+
+            if(right_line[i]<1)//防止越界
+            {
+                right_line[i]=1;
+            }
+            
+            if(right_line[i]>=DEAL_IMAGE_W-2)//防止越界
+            {
+                right_line[i]=DEAL_IMAGE_W-2;
+            }
+        }
+    }
+}
+
+/**
+*
 * @brief  找下拐点
 * @param  start_point 搜索起点 
 * @param  end_point    搜索终点
@@ -653,24 +750,24 @@ void find_down_point(uint8 start_point,uint8 end_point)
     {
         //点i下面2个连续相差不大并且点i与上面边3个点分别相差很大，认为有下左拐点
         if(left_down_point==0&&
-            abs(left_line[i]-left_line[i+1])<=5&&
-            abs(left_line[i+1]-left_line[i+2])<=5&&
-            abs(left_line[i+2]-left_line[i+3])<=5&&
+            abs(left_line[i]-left_line[i+1])<=6&&
+            abs(left_line[i+1]-left_line[i+2])<=6&&
+            abs(left_line[i+2]-left_line[i+3])<=6&&
             (left_line[i]-left_line[i-2])>=8&&
-            (left_line[i]-left_line[i-3])>=10&&
-            (left_line[i]-left_line[i-4])>=12)
+            (left_line[i]-left_line[i-3])>=15&&
+            (left_line[i]-left_line[i-4])>=15)
             {
-                left_down_point=i;
+                left_down_point=i+3;
             }
         if(right_down_point==0&&
             abs(right_line[i]-right_line[i+1])<=5&&
             abs(right_line[i+1]-right_line[i+2])<=5&&
             abs(right_line[i+2]-right_line[i+3])<=5&&
             (right_line[i]-right_line[i-2])<=-8&&
-            (right_line[i]-right_line[i-3])<=-10&&
-            (right_line[i]-right_line[i-4])<=-12)
+            (right_line[i]-right_line[i-3])<=-15&&
+            (right_line[i]-right_line[i-4])<=-15)
             {
-                right_down_point=i;
+                right_down_point=i+3;
             }
         if(left_down_point!=0&&right_down_point!=0)
         {
@@ -711,24 +808,24 @@ void find_up_point(uint8 start_point,uint8 end_point)
     {
         //点i下面2个连续相差不大并且点i与上面边3个点分别相差很大，认为有上左拐点
         if(left_up_point==0&&
-            abs(left_line[i]-left_line[i-1])<=5&&
-            abs(left_line[i-1]-left_line[i-2])<=5&&
-            abs(left_line[i-2]-left_line[i-3])<=5&&
+            abs(left_line[i]-left_line[i-1])<=6&&
+            abs(left_line[i-1]-left_line[i-2])<=6&&
+            abs(left_line[i-2]-left_line[i-3])<=6&&
             (left_line[i]-left_line[i+2])>=8&&
-            (left_line[i]-left_line[i+3])>=10&&
-            (left_line[i]-left_line[i+4])>=12)
+            (left_line[i]-left_line[i+3])>=15&&
+            (left_line[i]-left_line[i+4])>=15)
             {
-                left_up_point=i;
+                left_up_point=i-3;
             }
         if(right_up_point==0&&
             abs(right_line[i]-right_line[i-1])<=5&&
             abs(right_line[i-1]-right_line[i-2])<=5&&
             abs(right_line[i-2]-right_line[i-3])<=5&&
             (right_line[i]-right_line[i+2])<=-8&&
-            (right_line[i]-right_line[i+3])<=-10&&
-            (right_line[i]-right_line[i+4])<=-12)
+            (right_line[i]-right_line[i+3])<=-15&&
+            (right_line[i]-right_line[i+4])<=-15)
             {
-                right_up_point=i;
+                right_up_point=i-3;
             }
         if(left_up_point!=0&&right_up_point!=0)
         {
@@ -736,3 +833,53 @@ void find_up_point(uint8 start_point,uint8 end_point)
         }       
     }
 }
+
+
+
+/**
+*
+* @brief  判断十字路口并补线
+**/
+void cross_judge(void)
+{
+    if(left_right_lost_count>10)
+    {
+        find_up_point(MT9V03X_H-1,0);//寻找上拐点
+
+        find_down_point(MT9V03X_H-1,(left_up_point+right_up_point)/2);//寻找下拐点
+
+        if(car_go)
+        {
+            if(right_up_point||left_up_point)//如果找到了上拐点
+            {
+                beep_on();//蜂鸣器响
+            } 
+        }
+    }
+    if(right_up_point&&left_up_point)
+    {
+        if(left_down_point&&right_down_point)//如果四个拐点都存在
+        {
+            left_draw_line(left_line[left_up_point],left_up_point,left_line[left_down_point],left_down_point);//左边补线
+            right_draw_line(right_line[right_up_point],right_up_point,right_line[right_down_point],right_down_point);//右边补线
+        }
+        else if(left_down_point&&!right_down_point)//如果左边有下拐点，右边没有
+        {
+            left_draw_line(left_line[left_up_point],left_up_point,left_line[left_down_point],left_down_point);//左边补线
+            lenthen_right_line(right_up_point-1,DEAL_IMAGE_H-1);//右边延长
+        }
+        else if(!left_down_point&&right_down_point)//如果右边有下拐点，左边没有
+        {
+            right_draw_line(right_line[right_up_point],right_up_point,right_line[right_down_point],right_down_point);//右边补线
+            lenthen_left_line(left_up_point-1,DEAL_IMAGE_H-1);//左边延长
+        }
+        else if(!left_down_point&&!right_down_point)//如果四个拐点都不存在
+        {
+            lenthen_left_line(left_up_point-1,DEAL_IMAGE_H-1);//左边延长
+            lenthen_right_line(right_up_point-1,DEAL_IMAGE_H-1);//右边延长
+        }
+    }
+}
+
+
+
