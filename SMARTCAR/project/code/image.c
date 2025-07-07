@@ -38,6 +38,12 @@ uint8 left_up_point;//左上拐点
 uint8 right_down_point;//右下拐点
 uint8 right_up_point;//右上拐点
 
+
+//元素标志位
+uint8 cross_flag;
+
+
+
 //误差权重数组(后期使用)
 const uint8 weight[DEAL_IMAGE_H]= 
 {
@@ -487,6 +493,16 @@ void longest_white_sweep_line(uint8 image[DEAL_IMAGE_H][DEAL_IMAGE_W])
     //记录丢边情况
     for(i=DEAL_IMAGE_H-1;i>=DEAL_IMAGE_H-search_stop_line;i--)
     {
+        if(boundary_start_left==0&&left_lost_flag[i]==1)
+        {
+            boundary_start_left=i;//记录左边界起点
+        }
+
+        if(boundary_start_right==0&&right_lost_flag[i]==1)
+        {
+            boundary_start_right=i;//记录右边界起点
+        }
+
         if(left_lost_flag[i]==1&&right_lost_flag[i]==0)left_lost_count++;//左丢
         if(left_lost_flag[i]==0&&right_lost_flag[i]==1)right_lost_count++;//右丢
         if(left_lost_flag[i]==1&&right_lost_flag[i]==1)left_right_lost_count++;//丢双边
@@ -834,6 +850,102 @@ void find_up_point(uint8 start_point,uint8 end_point)
     }
 }
 
+/**
+*
+* @brief  判断右边界连续性
+* @retval 连续返回0，不连续返回断裂点
+**/
+uint8 right_countinuity_detect(uint8 start_point,uint8 end_point)
+{
+    uint8 continuity_line=1;//连续标志
+
+    if(start_point<end_point)//从下往上扫
+    {
+        uint8 t=start_point;
+        start_point=end_point;
+        end_point=t;
+    }
+
+    if(right_lost_count>DEAL_IMAGE_H*0.95)//如果右边丢线超过95%，直接返回1
+    {
+        return 1;
+    }
+
+    if(start_point>DEAL_IMAGE_H-5)//防止起点越界
+    {
+        start_point=DEAL_IMAGE_H-5;
+    }
+
+    if(end_point<5)//防止终点越界
+    {
+        end_point=5;
+    }
+
+    for(uint8 i=start_point;i>end_point;i--)
+    {
+        if(abs(right_line[i]-right_line[i-1])>6)
+        {
+            continuity_line=i;//如果当前点与前一个点相差大于6，认为不连续
+            break;
+        }
+    }
+    return continuity_line;//返回断裂点坐标，如果返回0，表示连续
+}
+
+
+/**
+*
+* @brief  找到右边单调性突变点
+* @retval 拐点坐标
+**/
+uint8 find_right_change(uint8 start_point,uint8 end_point)
+{
+    uint8 right_change_line=0;//右边突变标志
+
+    if(start_point<end_point)//从下往上扫
+    {
+        return right_change_line;//如果起点小于终点，直接返回0
+    }
+
+    if(start_point>=DEAL_IMAGE_H-5)//防止起点越界
+    {
+        start_point=DEAL_IMAGE_H-5;
+    }
+
+    if(end_point<5)//防止终点越界
+    {
+        end_point=5;
+    }
+
+    if(right_lost_count>DEAL_IMAGE_H*0.95)
+    {
+        return right_change_line;//如果右边丢线超过95%，直接返回0
+    }
+
+    for(uint8 i=start_point;i>end_point;i--)
+    {
+        if(right_line[i]==right_line[i-5]&&right_line[i]==right_line[i+5]&&
+        right_line[i]==right_line[i-4]&&right_line[i]==right_line[i+4]&&
+        right_line[i]==right_line[i-3]&&right_line[i]==right_line[i+3]&&
+        right_line[i]==right_line[i-2]&&right_line[i]==right_line[i+2]&&
+        right_line[i]==right_line[i-1]&&right_line[i]==right_line[i+1])
+        {
+            continue;//如果当前点与前后5个点相等，继续
+        }
+        else if(right_line[i]>=right_line[i-5]&&right_line[i]>=right_line[i+5]&&
+                right_line[i]>=right_line[i-4]&&right_line[i]>=right_line[i+4]&&
+                right_line[i]>=right_line[i-3]&&right_line[i]>=right_line[i+3]&&
+                right_line[i]>=right_line[i-2]&&right_line[i]>=right_line[i+2]&&
+                right_line[i]>=right_line[i-1]&&right_line[i]>=right_line[i+1])
+        {
+            right_change_line=i;//如果当前点大于前后5个点，认为是突变点
+            break;
+        }
+    }
+
+    return right_change_line;//返回突变点坐标
+}
+
 
 
 /**
@@ -842,6 +954,8 @@ void find_up_point(uint8 start_point,uint8 end_point)
 **/
 void cross_judge(void)
 {
+    cross_flag=0;//十字标志清零
+
     if(left_right_lost_count>10)
     {
         find_up_point(MT9V03X_H-1,0);//寻找上拐点
@@ -855,28 +969,31 @@ void cross_judge(void)
                 beep_on();//蜂鸣器响
             } 
         }
-    }
-    if(right_up_point&&left_up_point)
-    {
-        if(left_down_point&&right_down_point)//如果四个拐点都存在
+
+        if(right_up_point&&left_up_point)
         {
-            left_draw_line(left_line[left_up_point],left_up_point,left_line[left_down_point],left_down_point);//左边补线
-            right_draw_line(right_line[right_up_point],right_up_point,right_line[right_down_point],right_down_point);//右边补线
-        }
-        else if(left_down_point&&!right_down_point)//如果左边有下拐点，右边没有
-        {
-            left_draw_line(left_line[left_up_point],left_up_point,left_line[left_down_point],left_down_point);//左边补线
-            lenthen_right_line(right_up_point-1,DEAL_IMAGE_H-1);//右边延长
-        }
-        else if(!left_down_point&&right_down_point)//如果右边有下拐点，左边没有
-        {
-            right_draw_line(right_line[right_up_point],right_up_point,right_line[right_down_point],right_down_point);//右边补线
-            lenthen_left_line(left_up_point-1,DEAL_IMAGE_H-1);//左边延长
-        }
-        else if(!left_down_point&&!right_down_point)//如果四个拐点都不存在
-        {
-            lenthen_left_line(left_up_point-1,DEAL_IMAGE_H-1);//左边延长
-            lenthen_right_line(right_up_point-1,DEAL_IMAGE_H-1);//右边延长
+            cross_flag=1;//十字标志置1
+
+            if(left_down_point&&right_down_point)//如果四个拐点都存在
+            {
+                left_draw_line(left_line[left_up_point],left_up_point,left_line[left_down_point],left_down_point);//左边补线
+                right_draw_line(right_line[right_up_point],right_up_point,right_line[right_down_point],right_down_point);//右边补线
+            }
+            else if(left_down_point&&!right_down_point)//如果左边有下拐点，右边没有
+            {
+                left_draw_line(left_line[left_up_point],left_up_point,left_line[left_down_point],left_down_point);//左边补线
+                lenthen_right_line(right_up_point-1,DEAL_IMAGE_H-1);//右边延长
+            }
+            else if(!left_down_point&&right_down_point)//如果右边有下拐点，左边没有
+            {
+                right_draw_line(right_line[right_up_point],right_up_point,right_line[right_down_point],right_down_point);//右边补线
+                lenthen_left_line(left_up_point-1,DEAL_IMAGE_H-1);//左边延长
+            }
+            else if(!left_down_point&&!right_down_point)//如果四个拐点都不存在
+            {
+                lenthen_left_line(left_up_point-1,DEAL_IMAGE_H-1);//左边延长
+                lenthen_right_line(right_up_point-1,DEAL_IMAGE_H-1);//右边延长
+            }
         }
     }
 }
