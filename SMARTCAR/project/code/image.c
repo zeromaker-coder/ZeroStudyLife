@@ -40,7 +40,8 @@ uint8 right_up_point;//右上拐点
 
 
 //元素标志位
-uint8 cross_flag;
+uint8 cross_flag;//十字标志位
+uint8 right_island_flag; //右环岛标志
 
 
 
@@ -892,6 +893,48 @@ uint8 right_countinuity_detect(uint8 start_point,uint8 end_point)
     return continuity_line;//返回断裂点坐标，如果返回0，表示连续
 }
 
+/**
+*
+* @brief  判断左边界连续性
+* @retval 连续返回0，不连续返回断裂点
+**/
+uint8 left_countinuity_detect(uint8 start_point,uint8 end_point)
+{
+    uint8 continuity_line=1;//连续标志
+
+    if(start_point<end_point)//从下往上扫
+    {
+        uint8 t=start_point;
+        start_point=end_point;
+        end_point=t;
+    }
+
+    if(right_lost_count>DEAL_IMAGE_H*0.95)//如果右边丢线超过95%，直接返回1
+    {
+        return 1;
+    }
+
+    if(start_point>DEAL_IMAGE_H-5)//防止起点越界
+    {
+        start_point=DEAL_IMAGE_H-5;
+    }
+
+    if(end_point<5)//防止终点越界
+    {
+        end_point=5;
+    }
+
+    for(uint8 i=start_point;i>end_point;i--)
+    {
+        if(abs(left_line[i]-left_line[i-1])>6)
+        {
+            continuity_line=i;//如果当前点与前一个点相差大于6，认为不连续
+            break;
+        }
+    }
+    return continuity_line;//返回断裂点坐标，如果返回0，表示连续
+}
+
 
 /**
 *
@@ -932,11 +975,11 @@ uint8 find_right_change(uint8 start_point,uint8 end_point)
         {
             continue;//如果当前点与前后5个点相等，继续
         }
-        else if(right_line[i]>=right_line[i-5]&&right_line[i]>=right_line[i+5]&&
-                right_line[i]>=right_line[i-4]&&right_line[i]>=right_line[i+4]&&
-                right_line[i]>=right_line[i-3]&&right_line[i]>=right_line[i+3]&&
-                right_line[i]>=right_line[i-2]&&right_line[i]>=right_line[i+2]&&
-                right_line[i]>=right_line[i-1]&&right_line[i]>=right_line[i+1])
+        else if(right_line[i]<=right_line[i-5]&&right_line[i]<=right_line[i+5]&&
+                right_line[i]<=right_line[i-4]&&right_line[i]<=right_line[i+4]&&
+                right_line[i]<=right_line[i-3]&&right_line[i]<=right_line[i+3]&&
+                right_line[i]<=right_line[i-2]&&right_line[i]<=right_line[i+2]&&
+                right_line[i]<=right_line[i-1]&&right_line[i]<=right_line[i+1])
         {
             right_change_line=i;//如果当前点大于前后5个点，认为是突变点
             break;
@@ -944,6 +987,60 @@ uint8 find_right_change(uint8 start_point,uint8 end_point)
     }
 
     return right_change_line;//返回突变点坐标
+}
+
+
+/**
+*
+* @brief  找到左边单调性突变点
+* @retval 拐点坐标
+**/
+uint8 find_left_change(uint8 start_point,uint8 end_point)
+{
+    uint8 left_change_line=0;//右边突变标志
+
+    if(start_point<end_point)//从下往上扫
+    {
+        return left_change_line;//如果起点小于终点，直接返回0
+    }
+
+    if(start_point>=DEAL_IMAGE_H-5)//防止起点越界
+    {
+        start_point=DEAL_IMAGE_H-5;
+    }
+
+    if(end_point<5)//防止终点越界
+    {
+        end_point=5;
+    }
+
+    if(right_lost_count>DEAL_IMAGE_H*0.95)
+    {
+        return left_change_line;//如果右边丢线超过95%，直接返回0
+    }
+
+    for(uint8 i=start_point;i>end_point;i--)
+    {
+        if(left_line[i]==left_line[i-5]&&left_line[i]==left_line[i+5]&&
+        left_line[i]==left_line[i-4]&&left_line[i]==left_line[i+4]&&
+        left_line[i]==left_line[i-3]&&left_line[i]==left_line[i+3]&&
+        left_line[i]==left_line[i-2]&&left_line[i]==left_line[i+2]&&
+        left_line[i]==left_line[i-1]&&left_line[i]==left_line[i+1])
+        {
+            continue;//如果当前点与前后5个点相等，继续
+        }
+        else if(left_line[i]>=left_line[i-5]&&left_line[i]>=left_line[i+5]&&
+                left_line[i]>=left_line[i-4]&&left_line[i]>=left_line[i+4]&&
+                left_line[i]>=left_line[i-3]&&left_line[i]>=left_line[i+3]&&
+                left_line[i]>=left_line[i-2]&&left_line[i]>=left_line[i+2]&&
+                left_line[i]>=left_line[i-1]&&left_line[i]>=left_line[i+1])
+        {
+            left_change_line=i;//如果当前点大于前后5个点，认为是突变点
+            break;
+        }
+    }
+
+    return left_change_line;//返回突变点坐标
 }
 
 
@@ -994,6 +1091,35 @@ void cross_judge(void)
                 lenthen_left_line(left_up_point-1,DEAL_IMAGE_H-1);//左边延长
                 lenthen_right_line(right_up_point-1,DEAL_IMAGE_H-1);//右边延长
             }
+        }
+    }
+}
+
+/**
+*
+* @brief  判断环岛状态并补线
+**/
+void circle_judge(void)
+{
+    
+    uint8 continuity_left_change_flag=0;//左边连续变化标志
+    uint8 continuity_right_change_flag=0;//右边连续变化标志
+    uint8 left_change_line=0;//左边突变点
+    uint8 right_change_line=0;//右边突变点
+
+    continuity_left_change_flag=left_countinuity_detect(DEAL_IMAGE_H-1-5,DEAL_IMAGE_H-search_stop_line);//判断左边连续性
+    continuity_right_change_flag=right_countinuity_detect(DEAL_IMAGE_H-1-5,DEAL_IMAGE_H-search_stop_line);//判断右边连续性
+    left_change_line=find_left_change(DEAL_IMAGE_H-1-5,DEAL_IMAGE_H-search_stop_line);//寻找左边突变点
+    right_change_line=find_right_change(DEAL_IMAGE_H-1-5,DEAL_IMAGE_H-search_stop_line);//寻找右边突变点
+
+    if(cross_flag==0)//避开十字
+    {
+        continuity_left_change_flag=left_countinuity_detect(DEAL_IMAGE_H-1-5,DEAL_IMAGE_H-search_stop_line);//判断左边连续性
+        continuity_right_change_flag=right_countinuity_detect(DEAL_IMAGE_H-1-5,DEAL_IMAGE_H-search_stop_line);//判断右边连续性
+
+        if(right_island_flag==0)//处理右圆环
+        {
+            ;
         }
     }
 }
