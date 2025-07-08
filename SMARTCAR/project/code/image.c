@@ -41,8 +41,14 @@ uint8 right_up_point;//右上拐点
 
 //元素标志位
 uint8 cross_flag;//十字标志位
-uint8 right_island_flag; //右环岛标志
+uint8 circle_flag; //环岛标志位
+uint8 right_circle_flag; //右环岛标志
 
+//右环岛处理中间变量
+uint8 continuity_left_change_flag=0;//左边连续变化标志
+uint8 continuity_right_change_flag=0;//右边连续变化标志
+uint8 left_change_line=0;//左边突变点
+uint8 right_change_line=0;//右边突变点
 
 
 //误差权重数组(后期使用)
@@ -400,8 +406,6 @@ void longest_white_sweep_line(uint8 image[DEAL_IMAGE_H][DEAL_IMAGE_W])
     longest_white_left[1] = 0;
     longest_white_right[0] = 0;
     longest_white_right[1] = 0;
-    boundary_start_left=0;
-    boundary_start_right=0;
     for(i=0;i<=DEAL_IMAGE_H-1;i++)
     {
         left_line[i]=0;
@@ -456,7 +460,7 @@ void longest_white_sweep_line(uint8 image[DEAL_IMAGE_H][DEAL_IMAGE_W])
             }
             else if(j>=DEAL_IMAGE_W-1-2)//右边界丢失
             {
-                right_border = j;
+                right_border = DEAL_IMAGE_W-1;
                 right_lost_flag[i]=1;//右边界丢线记录
                 break;
             }
@@ -471,7 +475,7 @@ void longest_white_sweep_line(uint8 image[DEAL_IMAGE_H][DEAL_IMAGE_W])
             }
             else if(j<=2)//左边界丢失
             {
-                left_border = j;
+                left_border = 0;
                 left_lost_flag[i]=1;//左边界丢线记录
                 break;
             }
@@ -480,26 +484,22 @@ void longest_white_sweep_line(uint8 image[DEAL_IMAGE_H][DEAL_IMAGE_W])
         right_line[i]=right_border;//存储右边线
     }
 
-    cross_judge();//判断十字
-
-    for(i = DEAL_IMAGE_H-1;i>=DEAL_IMAGE_H-search_stop_line&&i>=0;i--)
-    {
-        mid_line[i]=(left_line[i]+right_line[i])/2;//存储中线
-    }
-
     //边界丢线清零
     left_lost_count=0;
     right_lost_count=0;
     left_right_lost_count=0;
+    //记录边界起点
+    boundary_start_left=0;
+    boundary_start_right=0;
     //记录丢边情况
     for(i=DEAL_IMAGE_H-1;i>=DEAL_IMAGE_H-search_stop_line;i--)
     {
-        if(boundary_start_left==0&&left_lost_flag[i]==1)
+        if(boundary_start_left==0&&left_lost_flag[i]==0)
         {
             boundary_start_left=i;//记录左边界起点
         }
 
-        if(boundary_start_right==0&&right_lost_flag[i]==1)
+        if(boundary_start_right==0&&right_lost_flag[i]==0)
         {
             boundary_start_right=i;//记录右边界起点
         }
@@ -507,6 +507,15 @@ void longest_white_sweep_line(uint8 image[DEAL_IMAGE_H][DEAL_IMAGE_W])
         if(left_lost_flag[i]==1&&right_lost_flag[i]==0)left_lost_count++;//左丢
         if(left_lost_flag[i]==0&&right_lost_flag[i]==1)right_lost_count++;//右丢
         if(left_lost_flag[i]==1&&right_lost_flag[i]==1)left_right_lost_count++;//丢双边
+    }
+
+    circle_judge();//判断环岛
+
+    cross_judge();//判断十字
+
+    for(i = DEAL_IMAGE_H-1;i>=DEAL_IMAGE_H-search_stop_line&&i>=0;i--)
+    {
+        mid_line[i]=(left_line[i]+right_line[i])/2;//存储中线
     }
 }
 
@@ -809,18 +818,22 @@ void find_up_point(uint8 start_point,uint8 end_point)
         start_point=end_point;
         end_point=t;
     }
+
     if(start_point>DEAL_IMAGE_H-5-1)
     {
         start_point=DEAL_IMAGE_H-5-1;
     }
+
     if(end_point<DEAL_IMAGE_H-search_stop_line)
     {
         end_point=DEAL_IMAGE_H-search_stop_line;
     }
+
     if(end_point<5)
     {
         end_point=5;
     }
+
     for(int i=start_point;i>=end_point;i--)
     {
         //点i下面2个连续相差不大并且点i与上面边3个点分别相差很大，认为有上左拐点
@@ -858,7 +871,7 @@ void find_up_point(uint8 start_point,uint8 end_point)
 **/
 uint8 right_countinuity_detect(uint8 start_point,uint8 end_point)
 {
-    uint8 continuity_line=1;//连续标志
+    uint8 continuity_line=0;//连续标志
 
     if(start_point<end_point)//从下往上扫
     {
@@ -900,7 +913,7 @@ uint8 right_countinuity_detect(uint8 start_point,uint8 end_point)
 **/
 uint8 left_countinuity_detect(uint8 start_point,uint8 end_point)
 {
-    uint8 continuity_line=1;//连续标志
+    uint8 continuity_line=0;//连续标志
 
     if(start_point<end_point)//从下往上扫
     {
@@ -909,7 +922,12 @@ uint8 left_countinuity_detect(uint8 start_point,uint8 end_point)
         end_point=t;
     }
 
-    if(right_lost_count>DEAL_IMAGE_H*0.95)//如果右边丢线超过95%，直接返回1
+    if(left_lost_count>DEAL_IMAGE_H*0.95)//如果左边丢线超过95%，直接返回1
+    {
+        return 1;
+    }
+
+    if(search_stop_line<=5)//如果搜索截止行小于5，直接返回1
     {
         return 1;
     }
@@ -967,22 +985,25 @@ uint8 find_right_change(uint8 start_point,uint8 end_point)
 
     for(uint8 i=start_point;i>end_point;i--)
     {
-        if(right_line[i]==right_line[i-5]&&right_line[i]==right_line[i+5]&&
-        right_line[i]==right_line[i-4]&&right_line[i]==right_line[i+4]&&
-        right_line[i]==right_line[i-3]&&right_line[i]==right_line[i+3]&&
-        right_line[i]==right_line[i-2]&&right_line[i]==right_line[i+2]&&
-        right_line[i]==right_line[i-1]&&right_line[i]==right_line[i+1])
+        if(abs(right_line[i]-right_line[i-5])<=10&&abs(right_line[i]-right_line[i+5])<=10)//如果当前点与前后5个点相差小于20
         {
-            continue;//如果当前点与前后5个点相等，继续
-        }
-        else if(right_line[i]<=right_line[i-5]&&right_line[i]<=right_line[i+5]&&
-                right_line[i]<=right_line[i-4]&&right_line[i]<=right_line[i+4]&&
-                right_line[i]<=right_line[i-3]&&right_line[i]<=right_line[i+3]&&
-                right_line[i]<=right_line[i-2]&&right_line[i]<=right_line[i+2]&&
-                right_line[i]<=right_line[i-1]&&right_line[i]<=right_line[i+1])
-        {
-            right_change_line=i;//如果当前点大于前后5个点，认为是突变点
-            break;
+            if(right_line[i]==right_line[i-5]&&right_line[i]==right_line[i+5]&&
+            right_line[i]==right_line[i-4]&&right_line[i]==right_line[i+4]&&
+            right_line[i]==right_line[i-3]&&right_line[i]==right_line[i+3]&&
+            right_line[i]==right_line[i-2]&&right_line[i]==right_line[i+2]&&
+            right_line[i]==right_line[i-1]&&right_line[i]==right_line[i+1])
+            {
+                continue;//如果当前点与前后5个点相等，继续
+            }
+            else if(right_line[i]<=right_line[i-5]&&right_line[i]<=right_line[i+5]&&
+                    right_line[i]<=right_line[i-4]&&right_line[i]<=right_line[i+4]&&
+                    right_line[i]<=right_line[i-3]&&right_line[i]<=right_line[i+3]&&
+                    right_line[i]<=right_line[i-2]&&right_line[i]<=right_line[i+2]&&
+                    right_line[i]<=right_line[i-1]&&right_line[i]<=right_line[i+1])
+            {
+                right_change_line=i;//如果当前点大于前后5个点，认为是突变点
+                break;
+            }
         }
     }
 
@@ -1021,25 +1042,27 @@ uint8 find_left_change(uint8 start_point,uint8 end_point)
 
     for(uint8 i=start_point;i>end_point;i--)
     {
-        if(left_line[i]==left_line[i-5]&&left_line[i]==left_line[i+5]&&
-        left_line[i]==left_line[i-4]&&left_line[i]==left_line[i+4]&&
-        left_line[i]==left_line[i-3]&&left_line[i]==left_line[i+3]&&
-        left_line[i]==left_line[i-2]&&left_line[i]==left_line[i+2]&&
-        left_line[i]==left_line[i-1]&&left_line[i]==left_line[i+1])
+        if(abs(left_line[i]-left_line[i-5])<=10&&abs(left_line[i]-left_line[i+5])<=10)//如果当前点与前后5个点相差小于20
         {
-            continue;//如果当前点与前后5个点相等，继续
-        }
+            if(left_line[i]==left_line[i-5]&&left_line[i]==left_line[i+5]&&
+            left_line[i]==left_line[i-4]&&left_line[i]==left_line[i+4]&&
+            left_line[i]==left_line[i-3]&&left_line[i]==left_line[i+3]&&
+            left_line[i]==left_line[i-2]&&left_line[i]==left_line[i+2]&&
+            left_line[i]==left_line[i-1]&&left_line[i]==left_line[i+1])
+            {
+                continue;//如果当前点与前后5个点相等，继续
+            }
         else if(left_line[i]>=left_line[i-5]&&left_line[i]>=left_line[i+5]&&
                 left_line[i]>=left_line[i-4]&&left_line[i]>=left_line[i+4]&&
                 left_line[i]>=left_line[i-3]&&left_line[i]>=left_line[i+3]&&
                 left_line[i]>=left_line[i-2]&&left_line[i]>=left_line[i+2]&&
                 left_line[i]>=left_line[i-1]&&left_line[i]>=left_line[i+1])
-        {
-            left_change_line=i;//如果当前点大于前后5个点，认为是突变点
-            break;
+            {
+                left_change_line=i;//如果当前点大于前后5个点，认为是突变点
+                break;
+            }
         }
     }
-
     return left_change_line;//返回突变点坐标
 }
 
@@ -1053,43 +1076,46 @@ void cross_judge(void)
 {
     cross_flag=0;//十字标志清零
 
-    if(left_right_lost_count>10)
+    if(!circle_flag)
     {
-        find_up_point(MT9V03X_H-1,0);//寻找上拐点
-
-        find_down_point(MT9V03X_H-1,(left_up_point+right_up_point)/2);//寻找下拐点
-
-        if(car_go)
+        if(left_right_lost_count>10)
         {
-            if(right_up_point||left_up_point)//如果找到了上拐点
-            {
-                beep_on();//蜂鸣器响
-            } 
-        }
+            find_up_point(MT9V03X_H-1,0);//寻找上拐点
 
-        if(right_up_point&&left_up_point)
-        {
-            cross_flag=1;//十字标志置1
+            find_down_point(MT9V03X_H-1,(left_up_point+right_up_point)/2);//寻找下拐点
 
-            if(left_down_point&&right_down_point)//如果四个拐点都存在
+            if(car_go)
             {
-                left_draw_line(left_line[left_up_point],left_up_point,left_line[left_down_point],left_down_point);//左边补线
-                right_draw_line(right_line[right_up_point],right_up_point,right_line[right_down_point],right_down_point);//右边补线
+                // if(right_up_point||left_up_point)//如果找到了上拐点
+                // {
+                //     beep_on();//蜂鸣器响
+                // } 
             }
-            else if(left_down_point&&!right_down_point)//如果左边有下拐点，右边没有
+
+            if(right_up_point&&left_up_point)
             {
-                left_draw_line(left_line[left_up_point],left_up_point,left_line[left_down_point],left_down_point);//左边补线
-                lenthen_right_line(right_up_point-1,DEAL_IMAGE_H-1);//右边延长
-            }
-            else if(!left_down_point&&right_down_point)//如果右边有下拐点，左边没有
-            {
-                right_draw_line(right_line[right_up_point],right_up_point,right_line[right_down_point],right_down_point);//右边补线
-                lenthen_left_line(left_up_point-1,DEAL_IMAGE_H-1);//左边延长
-            }
-            else if(!left_down_point&&!right_down_point)//如果四个拐点都不存在
-            {
-                lenthen_left_line(left_up_point-1,DEAL_IMAGE_H-1);//左边延长
-                lenthen_right_line(right_up_point-1,DEAL_IMAGE_H-1);//右边延长
+                cross_flag=1;//十字标志置1
+
+                if(left_down_point&&right_down_point)//如果四个拐点都存在
+                {
+                    left_draw_line(left_line[left_up_point],left_up_point,left_line[left_down_point],left_down_point);//左边补线
+                    right_draw_line(right_line[right_up_point],right_up_point,right_line[right_down_point],right_down_point);//右边补线
+                }
+                else if(left_down_point&&!right_down_point)//如果左边有下拐点，右边没有
+                {
+                    left_draw_line(left_line[left_up_point],left_up_point,left_line[left_down_point],left_down_point);//左边补线
+                    lenthen_right_line(right_up_point-1,DEAL_IMAGE_H-1);//右边延长
+                }
+                else if(!left_down_point&&right_down_point)//如果右边有下拐点，左边没有
+                {
+                    right_draw_line(right_line[right_up_point],right_up_point,right_line[right_down_point],right_down_point);//右边补线
+                    lenthen_left_line(left_up_point-1,DEAL_IMAGE_H-1);//左边延长
+                }
+                else if(!left_down_point&&!right_down_point)//如果四个拐点都不存在
+                {
+                    lenthen_left_line(left_up_point-1,DEAL_IMAGE_H-1);//左边延长
+                    lenthen_right_line(right_up_point-1,DEAL_IMAGE_H-1);//右边延长
+                }
             }
         }
     }
@@ -1102,24 +1128,32 @@ void cross_judge(void)
 void circle_judge(void)
 {
     
-    uint8 continuity_left_change_flag=0;//左边连续变化标志
-    uint8 continuity_right_change_flag=0;//右边连续变化标志
-    uint8 left_change_line=0;//左边突变点
-    uint8 right_change_line=0;//右边突变点
-
-    continuity_left_change_flag=left_countinuity_detect(DEAL_IMAGE_H-1-5,DEAL_IMAGE_H-search_stop_line);//判断左边连续性
-    continuity_right_change_flag=right_countinuity_detect(DEAL_IMAGE_H-1-5,DEAL_IMAGE_H-search_stop_line);//判断右边连续性
-    left_change_line=find_left_change(DEAL_IMAGE_H-1-5,DEAL_IMAGE_H-search_stop_line);//寻找左边突变点
-    right_change_line=find_right_change(DEAL_IMAGE_H-1-5,DEAL_IMAGE_H-search_stop_line);//寻找右边突变点
+    continuity_left_change_flag=0;//左边连续变化标志
+    continuity_right_change_flag=0;//右边连续变化标志
+    left_change_line=0;//左边突变点
+    right_change_line=0;//右边突变点
 
     if(cross_flag==0)//避开十字
     {
-        continuity_left_change_flag=left_countinuity_detect(DEAL_IMAGE_H-1-5,DEAL_IMAGE_H-search_stop_line);//判断左边连续性
-        continuity_right_change_flag=right_countinuity_detect(DEAL_IMAGE_H-1-5,DEAL_IMAGE_H-search_stop_line);//判断右边连续性
-
-        if(right_island_flag==0)//处理右圆环
+        continuity_left_change_flag=left_countinuity_detect(DEAL_IMAGE_H-1-5,10);//判断左边连续性
+        continuity_right_change_flag=right_countinuity_detect(DEAL_IMAGE_H-1-5,10);//判断右边连续性
+        left_change_line=find_left_change(DEAL_IMAGE_H-1-5,10);//寻找左边突变点
+        right_change_line=find_right_change(DEAL_IMAGE_H-1-5,10);//寻找右边突变点
+        if(right_circle_flag==0)//处理右圆环
         {
-            ;
+            if(left_change_line==0&&
+            continuity_left_change_flag==0&&
+            continuity_right_change_flag!=0&&
+            right_lost_count>=10&&right_lost_count<=60&&
+            boundary_start_left>=DEAL_IMAGE_H-10&&
+            boundary_start_right>=DEAL_IMAGE_H-10&&
+            (DEAL_IMAGE_H-search_stop_line)<=15)
+            {
+                if(car_go&&circle_flag==0&&right_circle_flag==0)//如果车在行驶中
+                {
+                    beep_on();//蜂鸣器响
+                }
+            }
         }
     }
 }

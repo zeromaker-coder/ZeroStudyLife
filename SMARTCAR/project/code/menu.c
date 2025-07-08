@@ -1210,6 +1210,7 @@ void image_menu(void)
     ips200_show_string(0,150+16*6,"right_down_point:");
     ips200_show_string(0,150+16*7,"left_up_point:");
     ips200_show_string(0,150+16*8,"right_up_point:");
+    ips200_show_string(0,150+16*9,"right_change_line:");
 
     //显示数字
     ips200_show_int(150,150,encoder_data_left,3);
@@ -1221,6 +1222,7 @@ void image_menu(void)
     ips200_show_uint(150,150+16*6,right_down_point,3);
     ips200_show_uint(150,150+16*7,left_up_point,3);
     ips200_show_uint(150,150+16*8,right_up_point,3);
+    ips200_show_uint(150,150+16*9,right_change_line,3);
 
     key_clear_state(KEY_4);//清除按键状态
 	key_scanner();//千万不要忘

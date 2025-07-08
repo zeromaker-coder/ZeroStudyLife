@@ -34,6 +34,8 @@ void left_draw_line(uint8 x1,uint8 y1,uint8 x2,uint8 y2);
 
 void right_draw_line(uint8 x1,uint8 y1,uint8 x2,uint8 y2);
 
+void circle_judge(void);
+
 void cross_judge(void);
 
 extern uint8 left_down_point;
@@ -59,5 +61,9 @@ extern uint8 left_lost_count;
 extern uint8 right_lost_count;
 
 extern uint8 left_right_lost_count;
+
+extern uint8 left_change_line;
+
+extern uint8 right_change_line;
 
 #endif
