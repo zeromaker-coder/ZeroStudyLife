@@ -1140,6 +1140,7 @@ void circle_judge(void)
         left_change_line=find_left_change(DEAL_IMAGE_H-1-40,15);//寻找左边突变点
         right_change_line=find_right_change(DEAL_IMAGE_H-1-15,15);//寻找右边突变点
         find_down_point(DEAL_IMAGE_H-20,60);//寻找下拐点
+        find_up_point(DEAL_IMAGE_H-20,10);//寻找上拐点
         if(right_circle_flag==0)//处理右圆环
         {
             if(left_change_line==0&&
@@ -1172,6 +1173,17 @@ void circle_judge(void)
             if(right_circle_flag==1)
             {
                 right_draw_line(right_line[right_change_line],right_change_line,DEAL_IMAGE_W-1-(DEAL_IMAGE_W-1-right_line[right_change_line])*0.5,DEAL_IMAGE_H-1);//右边补线
+                if(right_change_line>50)
+                {
+                    right_circle_flag=2;//右圆环标志置0
+                }
+            }
+            else if(right_circle_flag==2)
+            {
+                if(right_up_point)
+                {
+                    left_draw_line(right_line[right_up_point],right_up_point,20,DEAL_IMAGE_H-1);//左边补线
+                }
             }
         }
     }

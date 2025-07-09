@@ -76,5 +76,7 @@ extern uint8 boundary_start_left;
 
 extern uint8 boundary_start_right;
 
+extern uint8 right_circle_flag;
+
 
 #endif

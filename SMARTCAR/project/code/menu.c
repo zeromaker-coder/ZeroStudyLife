@@ -1270,7 +1270,7 @@ void circle_param(void)
     show_boundary_line();
 
     //显示字符
-    ips200_show_string(0,0,"Real_image&binary_image:");
+    ips200_show_string(0,0,"right_circle_flag:");
     ips200_show_string(0,150,"boudary_start_left:");
     ips200_show_string(0,150+16,"boudary_start_right:");
     ips200_show_string(0,150+16*2,"left_change_line:");
@@ -1283,6 +1283,7 @@ void circle_param(void)
     ips200_show_string(0,150+16*9,"right_down_point:");
 
     //显示数字
+    ips200_show_uint(170,0,right_circle_flag,3);
     ips200_show_uint(170,150,boundary_start_left,3);
     ips200_show_uint(170,150+16,boundary_start_right,3);
     ips200_show_uint(170,150+16*2,left_change_line,3);
