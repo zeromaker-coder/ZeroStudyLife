@@ -66,4 +66,15 @@ extern uint8 left_change_line;
 
 extern uint8 right_change_line;
 
+extern uint8 continuity_left_change_flag;
+
+extern uint8 continuity_right_change_flag;
+
+extern uint8 search_stop_line;
+
+extern uint8 boundary_start_left;
+
+extern uint8 boundary_start_right;
+
+
 #endif

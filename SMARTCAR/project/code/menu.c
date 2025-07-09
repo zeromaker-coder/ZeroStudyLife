@@ -45,6 +45,7 @@ void menu(void)
     if(main_menu_item==5)Sec_Menu_04();//转向环PPDD菜单
     if(main_menu_item==6)Sec_Menu_05();//用户常用参数
     if(main_menu_item==7)image_menu();//图像菜单
+    if(main_menu_item==8)circle_param();//环岛参数
 }
 
 /**
@@ -61,8 +62,9 @@ void main_menu(void)
     ips200_show_string(16,94,"turn_ppdd");  //转向环ppdd
     ips200_show_string(16,110,"parameter");//常用参数(机械中值之类的)
     ips200_show_string(16,126,"image_and_other_param");//图像以及其他参数显示界面
-    ips200_show_string(16,142,"save_param");//保存参数
-    ips200_show_string(16,158,"load_param");//载入参数
+    ips200_show_string(16,142,"circle_param");//环岛参数
+    ips200_show_string(16,158,"save_param");//保存参数
+    ips200_show_string(16,174,"load_param");//载入参数
 
     ips200_show_string(0,(sec_menu_item+1)*16,"->");//菜单指针
 	
@@ -73,7 +75,7 @@ void main_menu(void)
         sec_menu_item--;
         if(sec_menu_item < 1) //如果副菜单指针小于1
         {
-            sec_menu_item = 9; //则将副菜单指针置为9
+            sec_menu_item = 10; //则将副菜单指针置为9
         }
         key_clear_state(KEY_1); //清除按键状态
         ips200_clear(); //清屏
@@ -82,7 +84,7 @@ void main_menu(void)
     if(KEY_SHORT_PRESS == key_get_state(KEY_2))
     {
         sec_menu_item++;
-        if(sec_menu_item > 9)//如果副菜单指针大于9
+        if(sec_menu_item > 10)//如果副菜单指针大于9
         {
             sec_menu_item = 1; //则将副菜单指针置为1
         }
@@ -135,7 +137,14 @@ void main_menu(void)
                 sec_menu_item = 1;
                 ips200_clear();
                 break;
+
             case 8:
+                // 进入环岛参数菜单
+                main_menu_item = 8;
+                sec_menu_item = 1;
+                ips200_clear();
+                break;
+            case 9:
                 // 保存参数
                 ips200_clear();
                 ips200_show_string(60, 160, "Param Saved!");
@@ -144,7 +153,7 @@ void main_menu(void)
                 system_delay_ms(50);
                 ips200_clear();
                 break;
-            case 9:
+            case 10:
                 // 载入参数
                 ips200_clear();
                 ips200_show_string(60, 160, "Param Loaded!");
@@ -1193,7 +1202,10 @@ void Sec_Menu_05(void)
 }
 
 
-
+/**
+* @brief  图像参数子菜单显示函数
+* @param   无
+*/
 void image_menu(void)
 {
 	static uint8 image_flag=1;//图像显示类型
@@ -1210,7 +1222,6 @@ void image_menu(void)
     ips200_show_string(0,150+16*6,"right_down_point:");
     ips200_show_string(0,150+16*7,"left_up_point:");
     ips200_show_string(0,150+16*8,"right_up_point:");
-    ips200_show_string(0,150+16*9,"right_change_line:");
 
     //显示数字
     ips200_show_int(150,150,encoder_data_left,3);
@@ -1222,7 +1233,67 @@ void image_menu(void)
     ips200_show_uint(150,150+16*6,right_down_point,3);
     ips200_show_uint(150,150+16*7,left_up_point,3);
     ips200_show_uint(150,150+16*8,right_up_point,3);
-    ips200_show_uint(150,150+16*9,right_change_line,3);
+
+    key_clear_state(KEY_4);//清除按键状态
+	key_scanner();//千万不要忘
+
+    if(!image_flag)show_binary_image(0,30,image_threshold);
+    else show_real_image(0,30);
+    
+
+    if(sec_menu_item == 1 && KEY_SHORT_PRESS == key_get_state(KEY_3))
+    {
+        //返回主菜单
+        image_flag=!image_flag;
+        key_clear_state(KEY_3);//清除按键状态
+        ips200_clear();//清屏
+    }
+    //返回
+    if(sec_menu_item == 1 && KEY_SHORT_PRESS == key_get_state(KEY_4))
+    {
+        //返回主菜单
+        main_menu_item = 1;
+        sec_menu_item = 1;
+        key_clear_state(KEY_4);//清除按键状态
+        ips200_clear();//清屏
+    }
+}
+
+/**
+* @brief  环岛参数子菜单显示函数
+* @param   无
+*/
+void circle_param(void)
+{
+    static uint8 image_flag=1;//图像显示类型
+    //显示边线以及中线
+    show_boundary_line();
+
+    //显示字符
+    ips200_show_string(0,0,"Real_image&binary_image:");
+    ips200_show_string(0,150,"boudary_start_left:");
+    ips200_show_string(0,150+16,"boudary_start_right:");
+    ips200_show_string(0,150+16*2,"left_change_line:");
+    ips200_show_string(0,150+16*3,"right_change_line:");
+    ips200_show_string(0,150+16*4,"continu_left");
+    ips200_show_string(0,150+16*5,"continu_right");
+    ips200_show_string(0,150+16*6,"search_stop_line");
+    ips200_show_string(0,150+16*7,"left_lost_count:");
+    ips200_show_string(0,150+16*8,"right_lost_count:");
+    ips200_show_string(0,150+16*9,"right_down_point:");
+
+    //显示数字
+    ips200_show_uint(170,150,boundary_start_left,3);
+    ips200_show_uint(170,150+16,boundary_start_right,3);
+    ips200_show_uint(170,150+16*2,left_change_line,3);
+    ips200_show_uint(170,150+16*3,right_change_line,3); 
+    ips200_show_uint(170,150+16*4,continuity_left_change_flag,3);
+    ips200_show_uint(170,150+16*5,continuity_right_change_flag,3);
+    ips200_show_uint(170,150+16*6,search_stop_line,3);
+    ips200_show_uint(170,150+16*7,left_lost_count,3);
+    ips200_show_uint(170,150+16*8,right_lost_count,3);
+    ips200_show_uint(170,150+16*9,right_down_point,3);
+
 
     key_clear_state(KEY_4);//清除按键状态
 	key_scanner();//千万不要忘

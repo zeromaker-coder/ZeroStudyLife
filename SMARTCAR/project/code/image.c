@@ -776,9 +776,9 @@ void find_down_point(uint8 start_point,uint8 end_point)
     {
         //点i下面2个连续相差不大并且点i与上面边3个点分别相差很大，认为有下左拐点
         if(left_down_point==0&&
-            abs(left_line[i]-left_line[i+1])<=6&&
-            abs(left_line[i+1]-left_line[i+2])<=6&&
-            abs(left_line[i+2]-left_line[i+3])<=6&&
+            abs(left_line[i]-left_line[i+1])<=3&&
+            abs(left_line[i+1]-left_line[i+2])<=3&&
+            abs(left_line[i+2]-left_line[i+3])<=3&&
             (left_line[i]-left_line[i-2])>=8&&
             (left_line[i]-left_line[i-3])>=15&&
             (left_line[i]-left_line[i-4])>=15)
@@ -786,9 +786,9 @@ void find_down_point(uint8 start_point,uint8 end_point)
                 left_down_point=i+3;
             }
         if(right_down_point==0&&
-            abs(right_line[i]-right_line[i+1])<=5&&
-            abs(right_line[i+1]-right_line[i+2])<=5&&
-            abs(right_line[i+2]-right_line[i+3])<=5&&
+            abs(right_line[i]-right_line[i+1])<=3&&
+            abs(right_line[i+1]-right_line[i+2])<=3&&
+            abs(right_line[i+2]-right_line[i+3])<=3&&
             (right_line[i]-right_line[i-2])<=-8&&
             (right_line[i]-right_line[i-3])<=-15&&
             (right_line[i]-right_line[i-4])<=-15)
@@ -838,9 +838,9 @@ void find_up_point(uint8 start_point,uint8 end_point)
     {
         //点i下面2个连续相差不大并且点i与上面边3个点分别相差很大，认为有上左拐点
         if(left_up_point==0&&
-            abs(left_line[i]-left_line[i-1])<=6&&
-            abs(left_line[i-1]-left_line[i-2])<=6&&
-            abs(left_line[i-2]-left_line[i-3])<=6&&
+            abs(left_line[i]-left_line[i-1])<=3&&
+            abs(left_line[i-1]-left_line[i-2])<=3&&
+            abs(left_line[i-2]-left_line[i-3])<=3&&
             (left_line[i]-left_line[i+2])>=8&&
             (left_line[i]-left_line[i+3])>=15&&
             (left_line[i]-left_line[i+4])>=15)
@@ -848,9 +848,9 @@ void find_up_point(uint8 start_point,uint8 end_point)
                 left_up_point=i-3;
             }
         if(right_up_point==0&&
-            abs(right_line[i]-right_line[i-1])<=5&&
-            abs(right_line[i-1]-right_line[i-2])<=5&&
-            abs(right_line[i-2]-right_line[i-3])<=5&&
+            abs(right_line[i]-right_line[i-1])<=3&&
+            abs(right_line[i-1]-right_line[i-2])<=3&&
+            abs(right_line[i-2]-right_line[i-3])<=3&&
             (right_line[i]-right_line[i+2])<=-8&&
             (right_line[i]-right_line[i+3])<=-15&&
             (right_line[i]-right_line[i+4])<=-15)
@@ -897,9 +897,9 @@ uint8 right_countinuity_detect(uint8 start_point,uint8 end_point)
 
     for(uint8 i=start_point;i>end_point;i--)
     {
-        if(abs(right_line[i]-right_line[i-1])>6)
+        if(abs(right_line[i]-right_line[i-1])>=3)
         {
-            continuity_line=i;//如果当前点与前一个点相差大于6，认为不连续
+            continuity_line=i;//如果当前点与前一个点相差大于4，认为不连续
             break;
         }
     }
@@ -944,9 +944,9 @@ uint8 left_countinuity_detect(uint8 start_point,uint8 end_point)
 
     for(uint8 i=start_point;i>end_point;i--)
     {
-        if(abs(left_line[i]-left_line[i-1])>6)
+        if(abs(left_line[i]-left_line[i-1])>=3)
         {
-            continuity_line=i;//如果当前点与前一个点相差大于6，认为不连续
+            continuity_line=i;//如果当前点与前一个点相差大于4，认为不连续
             break;
         }
     }
@@ -985,7 +985,7 @@ uint8 find_right_change(uint8 start_point,uint8 end_point)
 
     for(uint8 i=start_point;i>end_point;i--)
     {
-        if(abs(right_line[i]-right_line[i-5])<=10&&abs(right_line[i]-right_line[i+5])<=10)//如果当前点与前后5个点相差小于20
+        if(abs(right_line[i]-right_line[i-5])<=10&&abs(right_line[i]-right_line[i+5])<=10)//如果当前点与前后5个点相差小于10
         {
             if(right_line[i]==right_line[i-5]&&right_line[i]==right_line[i+5]&&
             right_line[i]==right_line[i-4]&&right_line[i]==right_line[i+4]&&
@@ -1042,7 +1042,7 @@ uint8 find_left_change(uint8 start_point,uint8 end_point)
 
     for(uint8 i=start_point;i>end_point;i--)
     {
-        if(abs(left_line[i]-left_line[i-5])<=10&&abs(left_line[i]-left_line[i+5])<=10)//如果当前点与前后5个点相差小于20
+        if(abs(left_line[i]-left_line[i-5])<=10&&abs(left_line[i]-left_line[i+5])<=10)//如果当前点与前后5个点相差小于10
         {
             if(left_line[i]==left_line[i-5]&&left_line[i]==left_line[i+5]&&
             left_line[i]==left_line[i-4]&&left_line[i]==left_line[i+4]&&
@@ -1135,19 +1135,24 @@ void circle_judge(void)
 
     if(cross_flag==0)//避开十字
     {
-        continuity_left_change_flag=left_countinuity_detect(DEAL_IMAGE_H-1-5,10);//判断左边连续性
-        continuity_right_change_flag=right_countinuity_detect(DEAL_IMAGE_H-1-5,10);//判断右边连续性
-        left_change_line=find_left_change(DEAL_IMAGE_H-1-5,10);//寻找左边突变点
-        right_change_line=find_right_change(DEAL_IMAGE_H-1-5,10);//寻找右边突变点
+        continuity_left_change_flag=left_countinuity_detect(DEAL_IMAGE_H-1-40,15);//判断左边连续性
+        continuity_right_change_flag=right_countinuity_detect(DEAL_IMAGE_H-1-15,15);//判断右边连续性
+        left_change_line=find_left_change(DEAL_IMAGE_H-1-40,15);//寻找左边突变点
+        right_change_line=find_right_change(DEAL_IMAGE_H-1-15,15);//寻找右边突变点
+        find_down_point(DEAL_IMAGE_H-20,DEAL_IMAGE_H-search_stop_line);//寻找下拐点
         if(right_circle_flag==0)//处理右圆环
         {
             if(left_change_line==0&&
+            right_change_line>0&&
             continuity_left_change_flag==0&&
             continuity_right_change_flag!=0&&
-            right_lost_count>=10&&right_lost_count<=60&&
-            boundary_start_left>=DEAL_IMAGE_H-10&&
-            boundary_start_right>=DEAL_IMAGE_H-10&&
-            (DEAL_IMAGE_H-search_stop_line)<=15)
+            right_lost_count>=10&&right_lost_count<=80&&
+            left_right_lost_count<=3&&
+            boundary_start_left>=DEAL_IMAGE_H-3&&
+            boundary_start_right>=DEAL_IMAGE_H-3&&
+            search_stop_line>=116&&
+            right_down_point
+            )
             {
                 if(car_go&&circle_flag==0&&right_circle_flag==0)//如果车在行驶中
                 {
