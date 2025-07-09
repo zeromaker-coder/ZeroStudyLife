@@ -1173,16 +1173,21 @@ void circle_judge(void)
             if(right_circle_flag==1)
             {
                 right_draw_line(right_line[right_change_line],right_change_line,DEAL_IMAGE_W-1-(DEAL_IMAGE_W-1-right_line[right_change_line])*0.5,DEAL_IMAGE_H-1);//右边补线
-                if(right_change_line>50)
+                if(right_change_line>50&&right_up_point)//右边突点坐标过大并且有右上拐点
                 {
-                    right_circle_flag=2;//右圆环标志置0
+                    right_circle_flag=2;//右圆环标志置2
                 }
             }
             else if(right_circle_flag==2)
             {
                 if(right_up_point)
                 {
-                    left_draw_line(right_line[right_up_point],right_up_point,20,DEAL_IMAGE_H-1);//左边补线
+                    left_draw_line(right_line[right_up_point],right_up_point,left_line[boundary_start_left],boundary_start_left);//左边补线
+                }
+                if(right_up_point>=100)
+                {
+                    circle_flag=0;//环岛标志置0
+                    right_circle_flag=0;//右圆环标志置0
                 }
             }
         }
