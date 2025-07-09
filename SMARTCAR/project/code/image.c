@@ -1139,7 +1139,7 @@ void circle_judge(void)
         continuity_right_change_flag=right_countinuity_detect(DEAL_IMAGE_H-1-15,15);//判断右边连续性
         left_change_line=find_left_change(DEAL_IMAGE_H-1-40,15);//寻找左边突变点
         right_change_line=find_right_change(DEAL_IMAGE_H-1-15,15);//寻找右边突变点
-        find_down_point(DEAL_IMAGE_H-20,DEAL_IMAGE_H-search_stop_line);//寻找下拐点
+        find_down_point(DEAL_IMAGE_H-20,60);//寻找下拐点
         if(right_circle_flag==0)//处理右圆环
         {
             if(left_change_line==0&&
