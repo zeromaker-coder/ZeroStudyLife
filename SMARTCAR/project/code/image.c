@@ -1158,6 +1158,20 @@ void circle_judge(void)
                 {
                     beep_on();//蜂鸣器响
                 }
+                right_circle_flag=1;//右圆环标志置1
+                circle_flag=1;//环岛标志置1
+            }
+            else
+            {
+                right_circle_flag=0;//右圆环标志置0
+                circle_flag=0;//环岛标志置0
+            }
+        }
+        else if(circle_flag==1)
+        {
+            if(right_circle_flag==1)
+            {
+                right_draw_line(right_line[right_change_line],right_change_line,DEAL_IMAGE_W-1-(DEAL_IMAGE_W-1-right_line[right_change_line])*0.5,DEAL_IMAGE_H-1);//右边补线
             }
         }
     }
