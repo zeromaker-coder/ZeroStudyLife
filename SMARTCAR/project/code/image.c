@@ -26,6 +26,8 @@ uint8 white_count[MT9V03X_W];//每一列的白列长度
 uint8 search_stop_line;//搜索截止行
 uint8 boundary_start_left;//左边界起点
 uint8 boundary_start_right;//右边界起点
+uint8 left_start;
+uint8 right_start;
 int16 longest_white_left[2];//左边的最长白列，0为长度，1为下标
 int16 longest_white_right[2];//右边的最长白列，0为长度，1为下标
 uint8 left_lost_flag[MT9V03X_H];//左丢线数组
@@ -408,6 +410,8 @@ void longest_white_sweep_line(uint8 image[DEAL_IMAGE_H][DEAL_IMAGE_W])
     longest_white_left[1] = 0;
     longest_white_right[0] = 0;
     longest_white_right[1] = 0;
+    left_start = 0;
+    right_start = 0;
     for(i=0;i<=DEAL_IMAGE_H-1;i++)
     {
         left_line[i]=0;
@@ -456,12 +460,20 @@ void longest_white_sweep_line(uint8 image[DEAL_IMAGE_H][DEAL_IMAGE_W])
         {
             if(image[i][j] == 1 && image[i][j+1] == 0 && image[i][j+2] == 0)//白黑黑，找到右边界
             {
+                if(right_start==0)//左边界起点
+                {
+                    right_start = j;
+                }
                 right_border = j;
                 right_lost_flag[i]=0;
                 break;
             }
             else if(j>=DEAL_IMAGE_W-1-2)//右边界丢失
             {
+                if(right_start==0)//左边界起点
+                {
+                    right_start = j;
+                }
                 right_border = DEAL_IMAGE_W-1;
                 right_lost_flag[i]=1;//右边界丢线记录
                 break;
@@ -471,12 +483,20 @@ void longest_white_sweep_line(uint8 image[DEAL_IMAGE_H][DEAL_IMAGE_W])
         {
             if(image[i][j] == 1 && image[i][j-1] == 0 && image[i][j-2] == 0)//白黑黑，找到右边界
             {
+                if(left_start==0)//左边界起点
+                {
+                    left_start = j;
+                }
                 left_border = j;
                 left_lost_flag[i]=0;
                 break;
             }
             else if(j<=2)//左边界丢失
             {
+                if(left_start==0)//左边界起点
+                {
+                    left_start = j;
+                }
                 left_border = 0;
                 left_lost_flag[i]=1;//左边界丢线记录
                 break;
@@ -697,6 +717,52 @@ void lenthen_left_line(uint8 start_point,uint8 end_point)
         }
     }
 }
+
+
+/**
+* @brief  左边界延长（从下往上）
+* @param  start_point 延长起点（下方点）
+* @param  end_point   延长终点（上方点）
+**/
+void lenthen_left_line_up(uint8 start_point, uint8 end_point)
+{
+    float k;
+    // 防止越界
+    if (start_point >= DEAL_IMAGE_H - 1) start_point = DEAL_IMAGE_H - 1;
+    if (start_point < 0) start_point = 0;
+    if (end_point >= DEAL_IMAGE_H - 1) end_point = DEAL_IMAGE_H - 1;
+    if (end_point < 0) end_point = 0;
+
+    // 确保起点大于终点
+    if (start_point < end_point) {
+        uint8 t = start_point;
+        start_point = end_point;
+        end_point = t;
+    }
+
+    // 如果起点过于靠下，直接连线
+    if (start_point >= DEAL_IMAGE_H - 6) {
+        left_draw_line(left_line[start_point], start_point, left_line[end_point], end_point);
+    } else {
+        // 计算斜率
+        k = (float)(left_line[start_point] - left_line[start_point + 4]) / 5.0;
+        
+        // 从起点向上延长
+        for (int16_t i = start_point; i >= end_point; i--) {
+            left_line[i] = left_line[start_point] + (int)((i - start_point) * (-k));// 使用斜率延长(负斜率)
+            
+            // 防止越界
+            if (left_line[i] < 1) {
+                left_line[i] = 1;
+            }
+            if (left_line[i] >= DEAL_IMAGE_W - 2) {
+                left_line[i] = DEAL_IMAGE_W - 2;
+            }
+        }
+    }
+}
+
+
 
 /**
 *
@@ -1013,6 +1079,9 @@ uint8 find_right_change(uint8 start_point,uint8 end_point)
 }
 
 
+
+
+
 /**
 *
 * @brief  找到左边单调性突变点
@@ -1067,6 +1136,7 @@ uint8 find_left_change(uint8 start_point,uint8 end_point)
     }
     return left_change_line;//返回突变点坐标
 }
+
 
 
 
@@ -1188,6 +1258,29 @@ void circle_judge(void)
                     left_draw_line(right_line[right_up_point],right_up_point,left_line[boundary_start_left],boundary_start_left);//左边补线
                 }
                 else
+                {
+                    right_circle_flag=3;//右圆环标志置0
+                    if(car_go)
+                    {
+                        beep_on();//蜂鸣器响
+                    }
+                }
+            }
+            else if(right_circle_flag==3)
+            {
+                if(left_down_point>=3)
+                {
+                    right_circle_flag=4;//右圆环标志置4
+                    if(car_go)
+                    {
+                        beep_on();//蜂鸣器响
+                    }
+                }
+            }
+            else if(right_circle_flag==4)
+            {
+                lenthen_left_line_up(left_down_point,0);
+                if(left_down_point>80)
                 {
                     circle_flag=0;//环岛标志置0
                     right_circle_flag=0;//右圆环标志置0
