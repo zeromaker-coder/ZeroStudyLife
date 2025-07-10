@@ -1247,8 +1247,8 @@ void circle_judge(void)
                 if(right_change_line>50&&right_up_point)//右边突点坐标过大并且有右上拐点
                 {
                     right_circle_flag=2;//右圆环标志置2
-                    err_start_point=60;
-                    err_end_point=65;
+                    err_start_point=65;
+                    err_end_point=68;
                 }
             }
             else if(right_circle_flag==2)
@@ -1282,10 +1282,25 @@ void circle_judge(void)
                 lenthen_left_line_up(left_down_point,0);
                 if(left_down_point>80)
                 {
-                    circle_flag=0;//环岛标志置0
-                    right_circle_flag=0;//右圆环标志置0
+                    right_circle_flag=5;//右圆环标志置0
                     err_start_point=47;
                     err_end_point=52;
+                }
+            }
+            else if(right_circle_flag==5)
+            {
+                if(right_up_point)
+                {
+                    lenthen_right_line(right_up_point,DEAL_IMAGE_H-1);//右边延长
+                }
+                if(right_up_point>60)
+                {
+                    circle_flag=0;//环岛标志置0
+                    right_circle_flag=0;//右圆环标志置0
+                    if(car_go)
+                    {
+                        beep_on();//蜂鸣器响
+                    }
                 }
             }
         }
