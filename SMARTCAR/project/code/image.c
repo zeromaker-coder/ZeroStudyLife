@@ -49,6 +49,8 @@ uint8 continuity_left_change_flag=0;//左边连续变化标志
 uint8 continuity_right_change_flag=0;//右边连续变化标志
 uint8 left_change_line=0;//左边突变点
 uint8 right_change_line=0;//右边突变点
+uint8 err_start_point=47; //误差起始点
+uint8 err_end_point=52;   //误差终止点
 
 
 //误差权重数组(后期使用)
@@ -1140,11 +1142,10 @@ void circle_judge(void)
         left_change_line=find_left_change(DEAL_IMAGE_H-1-40,15);//寻找左边突变点
         right_change_line=find_right_change(DEAL_IMAGE_H-1-15,15);//寻找右边突变点
         find_down_point(DEAL_IMAGE_H-20,60);//寻找下拐点
-        find_up_point(DEAL_IMAGE_H-20,10);//寻找上拐点
+        find_up_point(DEAL_IMAGE_H-5,10);//寻找上拐点
         if(right_circle_flag==0)//处理右圆环
         {
-            if(left_change_line==0&&
-            right_change_line>0&&
+            if(right_change_line>0&&
             continuity_left_change_flag==0&&
             continuity_right_change_flag!=0&&
             right_lost_count>=10&&right_lost_count<=80&&
@@ -1172,10 +1173,12 @@ void circle_judge(void)
         {
             if(right_circle_flag==1)
             {
-                right_draw_line(right_line[right_change_line],right_change_line,DEAL_IMAGE_W-1-(DEAL_IMAGE_W-1-right_line[right_change_line])*0.5,DEAL_IMAGE_H-1);//右边补线
+                right_draw_line(right_line[right_change_line],right_change_line,DEAL_IMAGE_W-1-(DEAL_IMAGE_W-1-right_line[right_change_line])*0.50,DEAL_IMAGE_H-1);//右边补线
                 if(right_change_line>50&&right_up_point)//右边突点坐标过大并且有右上拐点
                 {
                     right_circle_flag=2;//右圆环标志置2
+                    err_start_point=60;
+                    err_end_point=65;
                 }
             }
             else if(right_circle_flag==2)
@@ -1184,10 +1187,12 @@ void circle_judge(void)
                 {
                     left_draw_line(right_line[right_up_point],right_up_point,left_line[boundary_start_left],boundary_start_left);//左边补线
                 }
-                if(right_up_point>=100)
+                else
                 {
                     circle_flag=0;//环岛标志置0
                     right_circle_flag=0;//右圆环标志置0
+                    err_start_point=47;
+                    err_end_point=52;
                 }
             }
         }

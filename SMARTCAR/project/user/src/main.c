@@ -107,7 +107,7 @@ int main(void)
 
         longest_white_sweep_line(binary_image);//图像扫线
 
-        line_err=err_sum_average(47, 52);//计算误差
+        line_err=err_sum_average(err_start_point, err_end_point);//计算误差
 
         if(image_count%5==0)
         {
