@@ -2,6 +2,7 @@
 #include "math.h"
 #include "menu.h"
 #include "beep.h"
+#include "pid.h"
 #define DISPLAY_MODE                ( 1 )                                       // 显示模式 0-灰度显示 1-二值化显示
                                                                                 // 0-灰度显示   就是正常显示的总钻风图像
                                                                                 // 1-二值化显示 根据最后一个二值化阈值显示出对应的二值化图像
@@ -45,6 +46,7 @@ uint8 right_up_point;//右上拐点
 uint8 cross_flag;//十字标志位
 uint8 circle_flag; //环岛标志位
 uint8 right_circle_flag; //右环岛标志
+uint8 straight_flag=0; //直线标志位
 
 //右环岛处理中间变量
 uint8 continuity_left_change_flag=0;//左边连续变化标志
@@ -552,6 +554,17 @@ void longest_white_sweep_line(uint8 image[DEAL_IMAGE_H][DEAL_IMAGE_W])
 
     cross_judge();//判断十字
 
+    if(straight_judge())//判断直线
+    {
+        straight_flag=1;//直线标志位
+        user_param.target_speed=550;
+    }
+    else
+    {
+        user_param.target_speed=500;
+        straight_flag=0;//不是直线
+    }
+
     for(i = DEAL_IMAGE_H-1;i>=DEAL_IMAGE_H-search_stop_line&&i>=0;i--)
     {
         mid_line[i]=(left_line[i]+right_line[i])/2;//存储中线
@@ -895,11 +908,11 @@ void find_down_point(uint8 start_point,uint8 end_point)
     {
         //点i下面2个连续相差不大并且点i与上面边3个点分别相差很大，认为有下左拐点
         if(left_down_point==0&&
-            abs(left_line[i]-left_line[i+1])<=3&&
-            abs(left_line[i+1]-left_line[i+2])<=3&&
-            abs(left_line[i+2]-left_line[i+3])<=3&&
+            abs(left_line[i]-left_line[i+1])<=5&&
+            abs(left_line[i+1]-left_line[i+2])<=5&&
+            abs(left_line[i+2]-left_line[i+3])<=5&&
             (left_line[i]-left_line[i-2])>=8&&
-            (left_line[i]-left_line[i-3])>=15&&
+            (left_line[i]-left_line[i-3])>=10&&
             (left_line[i]-left_line[i-4])>=15)
             {
                 left_down_point=i+3;
@@ -957,9 +970,9 @@ void find_up_point(uint8 start_point,uint8 end_point)
     {
         //点i下面2个连续相差不大并且点i与上面边3个点分别相差很大，认为有上左拐点
         if(left_up_point==0&&
-            abs(left_line[i]-left_line[i-1])<=3&&
-            abs(left_line[i-1]-left_line[i-2])<=3&&
-            abs(left_line[i-2]-left_line[i-3])<=3&&
+            abs(left_line[i]-left_line[i-1])<=5&&
+            abs(left_line[i-1]-left_line[i-2])<=5&&
+            abs(left_line[i-2]-left_line[i-3])<=5&&
             (left_line[i]-left_line[i+2])>=8&&
             (left_line[i]-left_line[i+3])>=15&&
             (left_line[i]-left_line[i+4])>=15)
@@ -1189,6 +1202,35 @@ uint8 find_left_change(uint8 start_point,uint8 end_point)
 }
 
 
+/**
+*
+* @brief  判断直道
+* @retval 直道返回1，非直道返回0
+**/
+uint8 straight_judge(void)
+{
+    if(search_stop_line>=110)
+    {
+        if(boundary_start_left>=110&&boundary_start_right>=110&&left_lost_count<10&&right_lost_count<10&&left_right_lost_count<10)
+        {
+            if(abs(line_err)<=8)
+            {
+                return 1;//直道
+            }
+            else
+            {
+                return 0;//非直道
+            }
+        }
+    }
+    else
+    {
+        return 0;//非直道
+    }
+}
+
+
+
 
 
 /**
@@ -1209,10 +1251,10 @@ void cross_judge(void)
 
             if(car_go)
             {
-                // if(right_up_point||left_up_point)//如果找到了上拐点
-                // {
-                //     beep_on();//蜂鸣器响
-                // } 
+                if(right_up_point||left_up_point)//如果找到了上拐点
+                {
+                    beep_on();//蜂鸣器响
+                } 
             }
 
             if(right_up_point&&left_up_point)
@@ -1298,8 +1340,12 @@ void circle_judge(void)
                 if(right_change_line>50&&right_up_point)//右边突点坐标过大并且有右上拐点
                 {
                     right_circle_flag=2;//右圆环标志置2
-                    err_start_point=55;
-                    err_end_point=60;
+                    err_start_point=60;
+                    err_end_point=65;
+                    if(car_go)
+                    {
+                        beep_on();//蜂鸣器响
+                    }
                 }
             }
             else if(right_circle_flag==2)
@@ -1330,6 +1376,7 @@ void circle_judge(void)
             }
             else if(right_circle_flag==4)
             {
+                find_down_point(DEAL_IMAGE_H-5-1,10);//寻找下拐点
                 lenthen_left_line_up(left_down_point,0);
                 if(left_down_point>80)
                 {

@@ -38,6 +38,8 @@ void circle_judge(void);
 
 void cross_judge(void);
 
+uint8 straight_judge(void);
+
 extern uint8 left_down_point;
 
 extern uint8 left_up_point;
