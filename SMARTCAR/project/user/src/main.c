@@ -111,7 +111,7 @@ int main(void)
 
         if(image_count%5==0)
         {
-            image_threshold=otsu_get_threshold(mt9v03x_image, MT9V03X_W, MT9V03X_H);//图像获取阈值
+							image_threshold=otsu_get_threshold(mt9v03x_image, MT9V03X_W, MT9V03X_H);//图像获取阈值
         }
 
         if(!car_go)
@@ -148,8 +148,8 @@ int main(void)
                 encoder_data_left = 0;
                 encoder_data_right = 0; // 重置编码器数据
             }
-            sprintf(data_buffer,"%d\r\n",right_circle_flag);
-            wireless_uart_send_string(data_buffer);//发送右圆环状态
+            // sprintf(data_buffer,"%d\r\n",right_circle_flag);
+            // wireless_uart_send_string(data_buffer);//发送右圆环状态
         }
 
         beep_cycle();

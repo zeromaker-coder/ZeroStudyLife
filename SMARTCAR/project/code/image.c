@@ -18,8 +18,8 @@
 //一些常用变量
 uint8 binary_image[MT9V03X_H][MT9V03X_W]; //二值化图像数组
 uint8 image_threshold;//图像阈值
-uint8 left_line[MT9V03X_H];//左边界数组
-uint8 right_line[MT9V03X_H];//右边界数组
+int16 left_line[MT9V03X_H];//左边界数组
+int16 right_line[MT9V03X_H];//右边界数组
 uint8 mid_line[MT9V03X_H];//中线数组
 float line_err;//中线误差
 uint8 white_count[MT9V03X_W];//每一列的白列长度
@@ -70,6 +70,22 @@ const uint8 weight[DEAL_IMAGE_H]=
     0,0,0,0,0,0,0,0,0,0,
     0,0,0,0,0,0,0,0,0,0,
     0,0,0,0,0,0,0,0,0,0
+};
+
+const uint8 road_wide[DEAL_IMAGE_H]=
+{
+41,42,43,45,46,47,49,49,51,53,
+53,55,55,57,58,59,61,62,63,64,
+65,67,68,69,70,72,73,74,76,76,
+78,79,80,82,82,84,86,86,88,88,
+90,91,92,94,95,96,97,98,100,100,
+102,103,105,105,107,108,109,111,112,113,
+114,116,117,118,119,120,122,123,124,126,
+126,128,129,130,132,132,134,134,136,138,
+138,140,140,142,144,144,146,146,148,149,
+150,151,152,154,155,156,157,158,159,161,
+162,163,164,165,166,167,169,170,171,172,
+173,175,175,177,177,179,180,181,184,184
 };
 
 
@@ -504,6 +520,7 @@ void longest_white_sweep_line(uint8 image[DEAL_IMAGE_H][DEAL_IMAGE_W])
         }
         left_line[i]=left_border;//存储左边线
         right_line[i]=right_border;//存储右边线
+        // printf("%d\r\n",right_border-left_border);//获取赛道宽度
     }
 
     //边界丢线清零
@@ -809,6 +826,40 @@ void lenthen_right_line(uint8 start_point,uint8 end_point)
         }
     }
 }
+
+
+/**
+*
+* @brief  道宽半边补左线
+**/
+void road_wide_draw_left_line(void)
+{
+    for(int i=0;i<DEAL_IMAGE_H-1;i++)
+    {
+        left_line[i]=right_line[i]-road_wide[i];
+        if(left_line[i]<1)//防止越界
+        {
+            left_line[i]=1;
+        }
+    }
+}
+
+/**
+*
+* @brief  道宽半边补右线
+**/
+void road_wide_draw_right_line(void)
+{
+    for(int i=0;i<DEAL_IMAGE_H-1;i++)
+    {
+        right_line[i]=left_line[i]+road_wide[i];
+        if(right_line[i]>=DEAL_IMAGE_W-2)//防止越界
+        {
+            right_line[i]=DEAL_IMAGE_W-2;
+        }
+    }
+}
+
 
 /**
 *
@@ -1243,12 +1294,12 @@ void circle_judge(void)
         {
             if(right_circle_flag==1)
             {
-                right_draw_line(right_line[right_change_line],right_change_line,DEAL_IMAGE_W-1-(DEAL_IMAGE_W-1-right_line[right_change_line])*0.50,DEAL_IMAGE_H-1);//右边补线
+                right_draw_line(right_line[right_change_line],right_change_line,DEAL_IMAGE_W-1-(DEAL_IMAGE_W-1-right_line[right_change_line])*0.15,DEAL_IMAGE_H-1);//右边补线
                 if(right_change_line>50&&right_up_point)//右边突点坐标过大并且有右上拐点
                 {
                     right_circle_flag=2;//右圆环标志置2
-                    err_start_point=65;
-                    err_end_point=68;
+                    err_start_point=55;
+                    err_end_point=60;
                 }
             }
             else if(right_circle_flag==2)
@@ -1283,20 +1334,36 @@ void circle_judge(void)
                 if(left_down_point>80)
                 {
                     right_circle_flag=5;//右圆环标志置0
-                    err_start_point=47;
-                    err_end_point=52;
+                    if(car_go)
+                    {
+                        beep_on();//蜂鸣器响
+                    }
                 }
             }
             else if(right_circle_flag==5)
             {
                 if(right_up_point)
                 {
-                    lenthen_right_line(right_up_point,DEAL_IMAGE_H-1);//右边延长
+                    right_circle_flag=6;
+                    if(car_go)
+                    {
+                        beep_on();//蜂鸣器响
+                    }
                 }
+                else
+                {
+                    road_wide_draw_left_line();//左边道宽补线
+                }
+            }
+            else if(right_circle_flag==6)
+            {
+                lenthen_right_line(right_up_point,DEAL_IMAGE_H-1);//右边延长
                 if(right_up_point>60)
                 {
                     circle_flag=0;//环岛标志置0
                     right_circle_flag=0;//右圆环标志置0
+                    err_start_point=47;
+                    err_end_point=52;
                     if(car_go)
                     {
                         beep_on();//蜂鸣器响
