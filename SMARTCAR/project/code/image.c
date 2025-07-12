@@ -929,9 +929,9 @@ void find_down_point(uint8 start_point,uint8 end_point)
                 left_down_point=i+3;
             }
         if(right_down_point==0&&
-            abs(right_line[i]-right_line[i+1])<=3&&
-            abs(right_line[i+1]-right_line[i+2])<=3&&
-            abs(right_line[i+2]-right_line[i+3])<=3&&
+            abs(right_line[i]-right_line[i+1])<=6&&
+            abs(right_line[i+1]-right_line[i+2])<=6&&
+            abs(right_line[i+2]-right_line[i+3])<=6&&
             (right_line[i]-right_line[i-2])<=-8&&
             (right_line[i]-right_line[i-3])<=-8&&
             (right_line[i]-right_line[i-4])<=-8)
@@ -1001,6 +1001,93 @@ void find_up_point(uint8 start_point,uint8 end_point)
                 right_up_point=i-3;
             }
         if(left_up_point!=0&&right_up_point!=0)
+        {
+            break;
+        }       
+    }
+}
+
+/**
+*
+* @brief  找圆环右上拐点
+* @param  start_point 搜索起点 
+* @param  end_point    搜索终点
+**/
+void circle_right_up_point(uint8 start_point,uint8 end_point)
+{
+    right_up_point=0;
+    if(start_point<end_point)
+    {
+        uint8 t=start_point;
+        start_point=end_point;
+        end_point=t;
+    }
+
+    if(start_point>DEAL_IMAGE_H-5-1)
+    {
+        start_point=DEAL_IMAGE_H-5-1;
+    }
+
+    if(end_point<5)
+    {
+        end_point=5;
+    }
+
+    for(int i=start_point;i>=end_point;i--)
+    {
+        if(right_up_point==0&&
+            abs(right_line[i]-right_line[i-1])<=5&&
+            abs(right_line[i-1]-right_line[i-2])<=5&&
+            abs(right_line[i-2]-right_line[i-3])<=5&&
+            (right_line[i]-right_line[i+2])<=-6&&
+            (right_line[i]-right_line[i+3])<=-8&&
+            (right_line[i]-right_line[i+4])<=-8)
+            {
+                right_up_point=i-3;
+            }
+        if(right_up_point!=0)
+        {
+            break;
+        }       
+    }
+}
+
+/**
+* @brief  找圆环右下拐点
+* @param  start_point 搜索起点
+* @param  end_point    搜索终点
+**/
+void circle_right_down_point(uint8 start_point,uint8 end_point)
+{
+    //参数清零
+    right_down_point=0;
+    if(start_point<end_point)
+    {
+        uint8 t=start_point;
+        start_point=end_point;
+        end_point=t;
+    }
+    if(start_point>DEAL_IMAGE_H-5-1)
+    {
+        start_point=DEAL_IMAGE_H-5-1;
+    }
+    if(end_point<5)
+    {
+        end_point=5;
+    }
+    for(int i=start_point;i>=end_point;i--)
+    {
+        if(right_down_point==0&&
+            abs(right_line[i]-right_line[i+1])<=6&&
+            abs(right_line[i+1]-right_line[i+2])<=6&&
+            abs(right_line[i+2]-right_line[i+3])<=6&&
+            (right_line[i]-right_line[i-2])<=-8&&
+            (right_line[i]-right_line[i-3])<=-8&&
+            (right_line[i]-right_line[i-4])<=-8)
+            {
+                right_down_point=i+3;
+            }
+        if(right_down_point!=0)
         {
             break;
         }       
@@ -1395,6 +1482,7 @@ void circle_judge(void)
             }
             else if(right_circle_flag==2)
             {
+                circle_right_up_point(DEAL_IMAGE_H-10,10);//寻找右上拐点
                 if(right_up_point)
                 {
                     left_draw_line(right_line[right_up_point],right_up_point,left_line[boundary_start_left],boundary_start_left);//左边补线
