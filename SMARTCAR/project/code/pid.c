@@ -5,6 +5,8 @@
 #include "math.h"
 #include "flash.h"
 
+#define up_speed 50.0
+
 //定义结构体
 PID_LocTypeDef gyro_pid_param;//角速度环结构体
 PID_LocTypeDef angle_pid_param;//角度环结构体
@@ -177,8 +179,16 @@ void angle_pid_location(void)
 */
 void speed_pid_loacation(void)
 {
-    speed_pid_out=-PID_location(user_param.target_speed,(encoder_data_right+encoder_data_left)/2,speed_pid_pin);//速度环
+    if(straight_flag)
+    {
+        speed_pid_out=-PID_location(user_param.target_speed,(encoder_data_right+encoder_data_left)/2,speed_pid_pin);
+    }
+    else
+    {
+        speed_pid_out=-PID_location(user_param.target_speed+up_speed,(encoder_data_right+encoder_data_left)/2,speed_pid_pin);
+    }
 }
+    
 
 /**
 * @brief  转向环pid函数

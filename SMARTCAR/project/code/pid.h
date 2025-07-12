@@ -59,6 +59,7 @@ extern float gyro_pid_out;
 extern float angle_pid_out;
 extern float speed_pid_out;
 extern float turn_pid_out;
+extern uint8 straight_flag;
 
 
 

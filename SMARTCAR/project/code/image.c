@@ -557,11 +557,9 @@ void longest_white_sweep_line(uint8 image[DEAL_IMAGE_H][DEAL_IMAGE_W])
     if(straight_judge())//判断直线
     {
         straight_flag=1;//直线标志位
-        user_param.target_speed=550;
     }
     else
     {
-        user_param.target_speed=500;
         straight_flag=0;//不是直线
     }
 
@@ -922,8 +920,8 @@ void find_down_point(uint8 start_point,uint8 end_point)
             abs(right_line[i+1]-right_line[i+2])<=3&&
             abs(right_line[i+2]-right_line[i+3])<=3&&
             (right_line[i]-right_line[i-2])<=-8&&
-            (right_line[i]-right_line[i-3])<=-15&&
-            (right_line[i]-right_line[i-4])<=-15)
+            (right_line[i]-right_line[i-3])<=-8&&
+            (right_line[i]-right_line[i-4])<=-8)
             {
                 right_down_point=i+3;
             }
@@ -1117,19 +1115,15 @@ uint8 find_right_change(uint8 start_point,uint8 end_point)
 
     for(uint8 i=start_point;i>end_point;i--)
     {
-        if(abs(right_line[i]-right_line[i-5])<=10&&abs(right_line[i]-right_line[i+5])<=10)//如果当前点与前后5个点相差小于10
+        if(abs(right_line[i]-right_line[i-3])<=10&&abs(right_line[i]-right_line[i+3])<=10)//如果当前点与前后5个点相差小于10
         {
-            if(right_line[i]==right_line[i-5]&&right_line[i]==right_line[i+5]&&
-            right_line[i]==right_line[i-4]&&right_line[i]==right_line[i+4]&&
-            right_line[i]==right_line[i-3]&&right_line[i]==right_line[i+3]&&
+            if(right_line[i]==right_line[i-3]&&right_line[i]==right_line[i+3]&&
             right_line[i]==right_line[i-2]&&right_line[i]==right_line[i+2]&&
             right_line[i]==right_line[i-1]&&right_line[i]==right_line[i+1])
             {
                 continue;//如果当前点与前后5个点相等，继续
             }
-            else if(right_line[i]<=right_line[i-5]&&right_line[i]<=right_line[i+5]&&
-                    right_line[i]<=right_line[i-4]&&right_line[i]<=right_line[i+4]&&
-                    right_line[i]<=right_line[i-3]&&right_line[i]<=right_line[i+3]&&
+            else if(right_line[i]<=right_line[i-3]&&right_line[i]<=right_line[i+3]&&
                     right_line[i]<=right_line[i-2]&&right_line[i]<=right_line[i+2]&&
                     right_line[i]<=right_line[i-1]&&right_line[i]<=right_line[i+1])
             {
@@ -1249,13 +1243,13 @@ void cross_judge(void)
 
             find_down_point(MT9V03X_H-1,(left_up_point+right_up_point)/2);//寻找下拐点
 
-            if(car_go)
-            {
-                if(right_up_point||left_up_point)//如果找到了上拐点
-                {
-                    beep_on();//蜂鸣器响
-                } 
-            }
+            // if(car_go)
+            // {
+            //     if(right_up_point||left_up_point)//如果找到了上拐点
+            //     {
+            //         beep_on();//蜂鸣器响
+            //     } 
+            // }
 
             if(right_up_point&&left_up_point)
             {
@@ -1300,7 +1294,7 @@ void circle_judge(void)
 
     if(cross_flag==0)//避开十字
     {
-        continuity_left_change_flag=left_countinuity_detect(DEAL_IMAGE_H-1-40,15);//判断左边连续性
+        continuity_left_change_flag=left_countinuity_detect(DEAL_IMAGE_H-1-60,15);//判断左边连续性
         continuity_right_change_flag=right_countinuity_detect(DEAL_IMAGE_H-1-15,15);//判断右边连续性
         left_change_line=find_left_change(DEAL_IMAGE_H-1-40,15);//寻找左边突变点
         right_change_line=find_right_change(DEAL_IMAGE_H-1-15,15);//寻找右边突变点
@@ -1311,11 +1305,11 @@ void circle_judge(void)
             if(right_change_line>0&&
             continuity_left_change_flag==0&&
             continuity_right_change_flag!=0&&
-            right_lost_count>=10&&right_lost_count<=80&&
-            left_right_lost_count<=3&&
-            boundary_start_left>=DEAL_IMAGE_H-3&&
-            boundary_start_right>=DEAL_IMAGE_H-3&&
-            search_stop_line>=116&&
+            right_lost_count>=10&&right_lost_count<=100&&
+            left_right_lost_count<=10&&
+            boundary_start_left>=DEAL_IMAGE_H-8&&
+            boundary_start_right>=DEAL_IMAGE_H-8&&
+            search_stop_line>=115&&
             right_down_point
             )
             {
@@ -1337,7 +1331,7 @@ void circle_judge(void)
             if(right_circle_flag==1)
             {
                 right_draw_line(right_line[right_change_line],right_change_line,DEAL_IMAGE_W-1-(DEAL_IMAGE_W-1-right_line[right_change_line])*0.15,DEAL_IMAGE_H-1);//右边补线
-                if(right_change_line>50&&right_up_point)//右边突点坐标过大并且有右上拐点
+                if((right_change_line>50&&right_up_point)||(right_change_line==0&&right_up_point))//右边突点坐标过大并且有右上拐点
                 {
                     right_circle_flag=2;//右圆环标志置2
                     err_start_point=60;
