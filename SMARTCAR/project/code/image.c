@@ -1078,12 +1078,12 @@ void circle_right_down_point(uint8 start_point,uint8 end_point)
     for(int i=start_point;i>=end_point;i--)
     {
         if(right_down_point==0&&
-            abs(right_line[i]-right_line[i+1])<=6&&
-            abs(right_line[i+1]-right_line[i+2])<=6&&
-            abs(right_line[i+2]-right_line[i+3])<=6&&
-            (right_line[i]-right_line[i-2])<=-8&&
-            (right_line[i]-right_line[i-3])<=-8&&
-            (right_line[i]-right_line[i-4])<=-8)
+            abs(right_line[i]-right_line[i+1])<=7&&
+            abs(right_line[i+1]-right_line[i+2])<=7&&
+            abs(right_line[i+2]-right_line[i+3])<=7&&
+            (right_line[i]-right_line[i-2])<=-5&&
+            (right_line[i]-right_line[i-3])<=-6&&
+            (right_line[i]-right_line[i-4])<=-6)
             {
                 right_down_point=i+3;
             }
@@ -1437,6 +1437,7 @@ void circle_judge(void)
         left_change_line=find_left_change(DEAL_IMAGE_H-1-40,15);//寻找左边突变点
         right_change_line=find_right_change(DEAL_IMAGE_H-1-15,15);//寻找右边突变点
         find_down_point(DEAL_IMAGE_H-20,60);//寻找下拐点
+        circle_right_down_point(DEAL_IMAGE_H-5,80);//寻找右下拐点
         find_up_point(DEAL_IMAGE_H-5,10);//寻找上拐点
         if(right_circle_flag==0)//处理右圆环
         {
