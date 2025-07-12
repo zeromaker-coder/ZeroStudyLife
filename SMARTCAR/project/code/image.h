@@ -40,6 +40,8 @@ void cross_judge(void);
 
 uint8 straight_judge(void);
 
+void zebra_judge(void);
+
 extern uint8 left_down_point;
 
 extern uint8 left_up_point;
@@ -83,6 +85,8 @@ extern uint8 right_circle_flag;
 extern uint8 err_start_point;
 
 extern uint8 err_end_point;   
+
+extern uint8 zebra_flag;
 
 
 #endif

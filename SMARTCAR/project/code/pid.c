@@ -5,7 +5,7 @@
 #include "math.h"
 #include "flash.h"
 
-#define up_speed 50.0
+#define up_speed 20
 
 //定义结构体
 PID_LocTypeDef gyro_pid_param;//角速度环结构体

@@ -3,6 +3,8 @@
 #include "menu.h"
 #include "beep.h"
 #include "pid.h"
+#include "encoder.h"
+
 #define DISPLAY_MODE                ( 1 )                                       // 显示模式 0-灰度显示 1-二值化显示
                                                                                 // 0-灰度显示   就是正常显示的总钻风图像
                                                                                 // 1-二值化显示 根据最后一个二值化阈值显示出对应的二值化图像
@@ -47,6 +49,7 @@ uint8 cross_flag;//十字标志位
 uint8 circle_flag; //环岛标志位
 uint8 right_circle_flag; //右环岛标志
 uint8 straight_flag=0; //直线标志位
+uint8 zebra_flag=0; //斑马线标志位
 
 //右环岛处理中间变量
 uint8 continuity_left_change_flag=0;//左边连续变化标志
@@ -89,6 +92,8 @@ const uint8 road_wide[DEAL_IMAGE_H]=
 162,163,164,165,166,167,169,170,171,172,
 173,175,175,177,177,179,180,181,184,184
 };
+
+uint8 real_road_wide[DEAL_IMAGE_H];
 
 
 /**
@@ -436,6 +441,7 @@ void longest_white_sweep_line(uint8 image[DEAL_IMAGE_H][DEAL_IMAGE_W])
         right_line[i]=DEAL_IMAGE_W-1;
         left_lost_flag[i]=0;
         right_lost_flag[i]=0;
+        real_road_wide[i]=0;
     }
     for(i=0;i<=DEAL_IMAGE_W-1;i++)
     {
@@ -522,6 +528,7 @@ void longest_white_sweep_line(uint8 image[DEAL_IMAGE_H][DEAL_IMAGE_W])
         }
         left_line[i]=left_border;//存储左边线
         right_line[i]=right_border;//存储右边线
+        real_road_wide[i]=right_border-left_border;//存储赛道宽度
         // printf("%d\r\n",right_border-left_border);//获取赛道宽度
     }
 
@@ -550,6 +557,11 @@ void longest_white_sweep_line(uint8 image[DEAL_IMAGE_H][DEAL_IMAGE_W])
         if(left_lost_flag[i]==1&&right_lost_flag[i]==1)left_right_lost_count++;//丢双边
     }
 
+    if(car_go)
+    {
+        zebra_judge();//判断斑马线
+    }
+
     circle_judge();//判断环岛
 
     cross_judge();//判断十字
@@ -562,6 +574,7 @@ void longest_white_sweep_line(uint8 image[DEAL_IMAGE_H][DEAL_IMAGE_W])
     {
         straight_flag=0;//不是直线
     }
+
 
     for(i = DEAL_IMAGE_H-1;i>=DEAL_IMAGE_H-search_stop_line&&i>=0;i--)
     {
@@ -1115,15 +1128,19 @@ uint8 find_right_change(uint8 start_point,uint8 end_point)
 
     for(uint8 i=start_point;i>end_point;i--)
     {
-        if(abs(right_line[i]-right_line[i-3])<=10&&abs(right_line[i]-right_line[i+3])<=10)//如果当前点与前后5个点相差小于10
+        if(abs(right_line[i]-right_line[i-5])<=10&&abs(right_line[i]-right_line[i+5])<=10)//如果当前点与前后5个点相差小于10
         {
-            if(right_line[i]==right_line[i-3]&&right_line[i]==right_line[i+3]&&
+            if(right_line[i]==right_line[i-5]&&right_line[i]==right_line[i+5]&&
+            right_line[i]==right_line[i-4]&&right_line[i]==right_line[i+4]&&
+            right_line[i]==right_line[i-3]&&right_line[i]==right_line[i+3]&&
             right_line[i]==right_line[i-2]&&right_line[i]==right_line[i+2]&&
             right_line[i]==right_line[i-1]&&right_line[i]==right_line[i+1])
             {
                 continue;//如果当前点与前后5个点相等，继续
             }
-            else if(right_line[i]<=right_line[i-3]&&right_line[i]<=right_line[i+3]&&
+            else if(right_line[i]<=right_line[i-5]&&right_line[i]<=right_line[i+5]&&
+                    right_line[i]<=right_line[i-4]&&right_line[i]<=right_line[i+4]&&
+                    right_line[i]<=right_line[i-3]&&right_line[i]<=right_line[i+3]&&
                     right_line[i]<=right_line[i-2]&&right_line[i]<=right_line[i+2]&&
                     right_line[i]<=right_line[i-1]&&right_line[i]<=right_line[i+1])
             {
@@ -1280,6 +1297,40 @@ void cross_judge(void)
     }
 }
 
+
+/**
+*
+* @brief  判断斑马线状态
+* @retval 斑马线状态，0表示不是斑马线，1表示是斑马线
+**/
+void zebra_judge(void)
+{
+    uint8 zebra_count=0;
+    zebra_flag=0;//斑马线标志清零
+    if(longest_white_left[1]>20&&longest_white_right[1]<DEAL_IMAGE_W-20&&
+        longest_white_right[1]>20&&longest_white_left[1]<DEAL_IMAGE_W-20&&
+        search_stop_line>=110&&
+    boundary_start_left>=DEAL_IMAGE_H-20&&
+    boundary_start_right>=DEAL_IMAGE_H-20)
+        {
+            for(int i=DEAL_IMAGE_H-1;i>=DEAL_IMAGE_H-3;i--)
+            {
+                for(int j=0;j<=DEAL_IMAGE_W-1-3;j++)
+                {
+                    if(binary_image[i][j]==1&&binary_image[i][j+1]==0&&binary_image[i][j+2]==0)
+                    {
+                        zebra_count++;
+                    }
+                }
+                if(zebra_count>=10)//如果黑色计数大于等于40，认为是斑马线
+                {
+                    zebra_flag=1;
+                }
+            }
+        }
+}
+
+
 /**
 *
 * @brief  判断环岛状态并补线
@@ -1303,7 +1354,7 @@ void circle_judge(void)
         if(right_circle_flag==0)//处理右圆环
         {
             if(right_change_line>0&&
-            continuity_left_change_flag==0&&
+            continuity_left_change_flag<=20&&
             continuity_right_change_flag!=0&&
             right_lost_count>=10&&right_lost_count<=100&&
             left_right_lost_count<=10&&
@@ -1330,8 +1381,8 @@ void circle_judge(void)
         {
             if(right_circle_flag==1)
             {
-                right_draw_line(right_line[right_change_line],right_change_line,DEAL_IMAGE_W-1-(DEAL_IMAGE_W-1-right_line[right_change_line])*0.15,DEAL_IMAGE_H-1);//右边补线
-                if((right_change_line>50&&right_up_point)||(right_change_line==0&&right_up_point))//右边突点坐标过大并且有右上拐点
+                right_draw_line(right_line[right_change_line],right_change_line,DEAL_IMAGE_W-1-(DEAL_IMAGE_W-1-right_line[right_change_line])*0.5,DEAL_IMAGE_H-1);//右边补线       
+                if(right_change_line>50&&right_up_point)//右边突点坐标过大并且有右上拐点
                 {
                     right_circle_flag=2;//右圆环标志置2
                     err_start_point=60;
@@ -1356,6 +1407,7 @@ void circle_judge(void)
                         beep_on();//蜂鸣器响
                     }
                 }
+
             }
             else if(right_circle_flag==3)
             {

@@ -122,7 +122,7 @@ int main(void)
         }
         else
         {
-            if(KEY_SHORT_PRESS==key_get_state(KEY_1))//按键1短按
+            if(KEY_SHORT_PRESS==key_get_state(KEY_1)||image_out_of_bounds(mt9v03x_image)||zebra_flag)//按键1短按
             {
                 car_go=0;//停止
                 main_menu_item=1;
@@ -130,19 +130,6 @@ int main(void)
                 pid_clear_all();
                 key_clear_all_state();//清除按键状态
                 beep_on();//蜂鸣器响
-                encoder_data_left_last=0;
-                encoder_data_right_last=0; // 重置编码器数据
-                encoder_data_left = 0;
-                encoder_data_right = 0; // 重置编码器数据
-            }
-            if(image_out_of_bounds(mt9v03x_image))//图像出界判断
-            {
-                car_go=0;//停止
-                main_menu_item=1;
-                sec_menu_item=1;
-                pid_clear_all();//清除PID数据
-                key_clear_all_state();//清除按键状态
-                //beep_on();//蜂鸣器响
                 encoder_data_left_last=0;
                 encoder_data_right_last=0; // 重置编码器数据
                 encoder_data_left = 0;
