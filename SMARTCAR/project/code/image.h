@@ -88,5 +88,9 @@ extern uint8 err_end_point;
 
 extern uint8 zebra_flag;
 
+extern uint8 right_circle_flag;
+
+extern int16 encoder_sum;
+
 
 #endif

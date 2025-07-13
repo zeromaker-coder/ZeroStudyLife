@@ -1,4 +1,5 @@
 #include "encoder.h"
+#include "image.h"
 
 #define ENCODER_1                   (TIM3_ENCODER)
 #define ENCODER_1_A                 (TIM3_ENCODER_CH1_B4)
@@ -38,4 +39,9 @@ void encoder_read(void)
     encoder_data_right  = -encoder_get_count(ENCODER_2);                              // 获取右编码器计数
     encoder_data_right_last = encoder_data_right;                                 // 保存右编码器上次计数
     encoder_clear_count(ENCODER_2);                                             // 清空右编码器计数
+
+    if(right_circle_flag == 2)
+    {
+      encoder_sum += (encoder_data_right+encoder_data_left);
+    }
 }

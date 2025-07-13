@@ -58,6 +58,9 @@ uint8 left_change_line=0;//左边突变点
 uint8 right_change_line=0;//右边突变点
 uint8 err_start_point=47; //误差起始点
 uint8 err_end_point=52;   //误差终止点
+int16 encoder_sum;//圆环状态编码器计数
+
+#define ENCODER_SUM_MAX ( 17000 ) //编码器计数最大值
 
 
 //误差权重数组(后期使用)
@@ -1468,8 +1471,8 @@ void circle_judge(void)
         else if(circle_flag==1)
         {
             if(right_circle_flag==1)
-            {
-                right_draw_line(right_line[right_change_line],right_change_line,DEAL_IMAGE_W-1-(DEAL_IMAGE_W-1-right_line[right_change_line])*0.5,DEAL_IMAGE_H-1);//右边补线       
+            {    
+                road_wide_draw_right_line();//右边道宽补线   
                 if(right_change_line>50&&right_up_point)//右边突点坐标过大并且有右上拐点
                 {
                     right_circle_flag=2;//右圆环标志置2
@@ -1490,11 +1493,17 @@ void circle_judge(void)
                 }
                 else
                 {
+                    road_wide_draw_left_line();//左边道宽补线
+                }
+
+                if(encoder_sum>=17000)
+                {
                     right_circle_flag=3;//右圆环标志置0
                     if(car_go)
                     {
                         beep_on();//蜂鸣器响
                     }
+                    encoder_sum=0;//编码器积分清零
                 }
 
             }

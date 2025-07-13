@@ -137,6 +137,8 @@ int main(void)
             }
             // sprintf(data_buffer,"%d\r\n",right_circle_flag);
             // wireless_uart_send_string(data_buffer);//发送右圆环状态
+            // sprintf(data_buffer,"%d\r\n",encoder_sum);
+            // wireless_uart_send_string(data_buffer);//发送编码器计数
         }
 
         beep_cycle();
