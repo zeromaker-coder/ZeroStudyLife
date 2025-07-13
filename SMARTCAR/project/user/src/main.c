@@ -82,6 +82,11 @@ int main(void)
     boundary_line_init();//边界线初始化
 
     
+    ips200_show_rgb565_image(0, 120, (const uint16 *)Image_Flags, 32, 9, 240, 80, 0);        // 显示一个RGB565色彩图片 原图240*80 显示240*80 低位在前
+    system_delay_ms(500);
+    ips200_clear();//清屏
+
+    
     gpio_init(BEEP, GPO, GPIO_LOW, GPO_PUSH_PULL);//蜂鸣器初始化
 
     pit_ms_init(PIT,1);//周期中断初始化，1ms周期

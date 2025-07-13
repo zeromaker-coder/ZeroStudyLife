@@ -92,5 +92,6 @@ extern uint8 right_circle_flag;
 
 extern int16 encoder_sum;
 
+extern const unsigned char Image_Flags[9*32];
 
 #endif
