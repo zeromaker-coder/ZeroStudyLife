@@ -183,9 +183,13 @@ void speed_pid_loacation(void)
     {
         speed_pid_out=-PID_location(user_param.target_speed,(encoder_data_right+encoder_data_left)/2,speed_pid_pin);
     }
+    else if(right_circle_flag)
+    {
+        speed_pid_out=-PID_location(user_param.target_speed-up_speed*2,(encoder_data_right+encoder_data_left)/2,speed_pid_pin);
+    }
     else
     {
-        speed_pid_out=-PID_location(user_param.target_speed+up_speed,(encoder_data_right+encoder_data_left)/2,speed_pid_pin);
+        speed_pid_out=-PID_location(user_param.target_speed+up_speed*0.5,(encoder_data_right+encoder_data_left)/2,speed_pid_pin);
     }
 }
     

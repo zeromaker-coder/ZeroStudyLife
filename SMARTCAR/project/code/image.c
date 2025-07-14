@@ -102,8 +102,6 @@ uint8 err_start_point=47; //误差起始点
 uint8 err_end_point=52;   //误差终止点
 int16 encoder_sum;//圆环状态编码器计数
 
-#define ENCODER_SUM_MAX ( 17000 ) //编码器计数最大值
-
 
 //误差权重数组(后期使用)
 const uint8 weight[DEAL_IMAGE_H]= 
@@ -964,12 +962,12 @@ void find_down_point(uint8 start_point,uint8 end_point)
     {
         //点i下面2个连续相差不大并且点i与上面边3个点分别相差很大，认为有下左拐点
         if(left_down_point==0&&
-            abs(left_line[i]-left_line[i+1])<=5&&
-            abs(left_line[i+1]-left_line[i+2])<=5&&
-            abs(left_line[i+2]-left_line[i+3])<=5&&
+            abs(left_line[i]-left_line[i+1])<=7&&
+            abs(left_line[i+1]-left_line[i+2])<=7&&
+            abs(left_line[i+2]-left_line[i+3])<=7&&
             (left_line[i]-left_line[i-2])>=8&&
-            (left_line[i]-left_line[i-3])>=10&&
-            (left_line[i]-left_line[i-4])>=15)
+            (left_line[i]-left_line[i-3])>=8&&
+            (left_line[i]-left_line[i-4])>=8)
             {
                 left_down_point=i+3;
             }
@@ -1140,6 +1138,48 @@ void circle_right_down_point(uint8 start_point,uint8 end_point)
 }
 
 /**
+* @brief  找圆环左下拐点
+* @param  start_point 搜索起点
+* @param  end_point    搜索终点
+**/
+void circle_left_down_point(uint8 start_point,uint8 end_point)
+{
+    //参数清零
+    left_down_point=0;
+    if(start_point<end_point)
+    {
+        uint8 t=start_point;
+        start_point=end_point;
+        end_point=t;
+    }
+    if(start_point>DEAL_IMAGE_H-5-1)
+    {
+        start_point=DEAL_IMAGE_H-5-1;
+    }
+    if(end_point<5)
+    {
+        end_point=5;
+    }
+    for(int i=start_point;i>=end_point;i--)
+    {
+        if(right_down_point==0&&
+            abs(right_line[i]-right_line[i+1])<=7&&
+            abs(right_line[i+1]-right_line[i+2])<=7&&
+            abs(right_line[i+2]-right_line[i+3])<=7&&
+            (right_line[i]-right_line[i-2])>=8&&
+            (right_line[i]-right_line[i-3])>=10&&
+            (right_line[i]-right_line[i-4])>=10)
+            {
+                left_down_point=i+3;
+            }
+        if(left_down_point!=0)
+        {
+            break;
+        }       
+    }
+}
+
+/**
 *
 * @brief  判断右边界连续性
 * @retval 连续返回0，不连续返回断裂点
@@ -1260,7 +1300,7 @@ uint8 find_right_change(uint8 start_point,uint8 end_point)
 
     for(uint8 i=start_point;i>end_point;i--)
     {
-        if(abs(right_line[i]-right_line[i-5])<=10&&abs(right_line[i]-right_line[i+5])<=10)//如果当前点与前后5个点相差小于10
+        if(abs(right_line[i]-right_line[i-5])<=10&&abs(right_line[i]-right_line[i+5])<=12)//如果当前点与前后5个点相差小于10
         {
             if(right_line[i]==right_line[i-5]&&right_line[i]==right_line[i+5]&&
             right_line[i]==right_line[i-4]&&right_line[i]==right_line[i+4]&&
@@ -1320,7 +1360,7 @@ uint8 find_left_change(uint8 start_point,uint8 end_point)
 
     for(uint8 i=start_point;i>end_point;i--)
     {
-        if(abs(left_line[i]-left_line[i-5])<=10&&abs(left_line[i]-left_line[i+5])<=10)//如果当前点与前后5个点相差小于10
+        if(abs(left_line[i]-left_line[i-5])<=10&&abs(left_line[i]-left_line[i+5])<=12)//如果当前点与前后5个点相差小于10
         {
             if(left_line[i]==left_line[i-5]&&left_line[i]==left_line[i+5]&&
             left_line[i]==left_line[i-4]&&left_line[i]==left_line[i+4]&&
@@ -1480,20 +1520,19 @@ void circle_judge(void)
         continuity_left_change_flag=left_countinuity_detect(DEAL_IMAGE_H-1-60,15);//判断左边连续性
         continuity_right_change_flag=right_countinuity_detect(DEAL_IMAGE_H-1-15,15);//判断右边连续性
         left_change_line=find_left_change(DEAL_IMAGE_H-1-40,15);//寻找左边突变点
-        right_change_line=find_right_change(DEAL_IMAGE_H-1-15,15);//寻找右边突变点
+        right_change_line=find_right_change(DEAL_IMAGE_H-1-5,5);//寻找右边突变点
         find_down_point(DEAL_IMAGE_H-20,60);//寻找下拐点
         circle_right_down_point(DEAL_IMAGE_H-5,80);//寻找右下拐点
         find_up_point(DEAL_IMAGE_H-5,10);//寻找上拐点
         if(right_circle_flag==0)//处理右圆环
         {
-            if(right_change_line>0&&
-            continuity_left_change_flag<=20&&
+            if(continuity_left_change_flag<=30&&
             continuity_right_change_flag!=0&&
             right_lost_count>=10&&right_lost_count<=100&&
             left_right_lost_count<=10&&
-            boundary_start_left>=DEAL_IMAGE_H-8&&
-            boundary_start_right>=DEAL_IMAGE_H-8&&
-            search_stop_line>=115&&
+            boundary_start_left>=DEAL_IMAGE_H-15&&
+            boundary_start_right>=DEAL_IMAGE_H-15&&
+            search_stop_line>=113&&
             right_down_point
             )
             {
@@ -1503,6 +1542,8 @@ void circle_judge(void)
                 }
                 right_circle_flag=1;//右圆环标志置1
                 circle_flag=1;//环岛标志置1
+                err_start_point=60;
+                err_end_point=65;
             }
             else
             {
@@ -1514,12 +1555,10 @@ void circle_judge(void)
         {
             if(right_circle_flag==1)
             {    
-                road_wide_draw_right_line();//右边道宽补线   
+                road_wide_draw_right_line();//右边道宽补线
                 if(right_change_line>50&&right_up_point)//右边突点坐标过大并且有右上拐点
                 {
                     right_circle_flag=2;//右圆环标志置2
-                    err_start_point=60;
-                    err_end_point=65;
                     if(car_go)
                     {
                         beep_on();//蜂鸣器响
@@ -1541,6 +1580,8 @@ void circle_judge(void)
                 if(encoder_sum>=17000)
                 {
                     right_circle_flag=3;//右圆环标志置0
+                    err_start_point=47;
+                    err_end_point=52;
                     if(car_go)
                     {
                         beep_on();//蜂鸣器响
@@ -1562,9 +1603,9 @@ void circle_judge(void)
             }
             else if(right_circle_flag==4)
             {
-                find_down_point(DEAL_IMAGE_H-5-1,10);//寻找下拐点
+                find_down_point(DEAL_IMAGE_H-10,10);//寻找下拐点
                 lenthen_left_line_up(left_down_point,0);
-                if(left_down_point>80)
+                if(left_down_point>50)
                 {
                     right_circle_flag=5;//右圆环标志置0
                     if(car_go)
@@ -1590,13 +1631,20 @@ void circle_judge(void)
             }
             else if(right_circle_flag==6)
             {
-                lenthen_right_line(right_up_point,DEAL_IMAGE_H-1);//右边延长
-                if(right_up_point>60)
+                find_up_point(DEAL_IMAGE_H-5,5);//寻找上拐点
+                if(right_up_point)
+                {
+                    lenthen_right_line(right_up_point,DEAL_IMAGE_H-1);//右边延长
+                }
+                else
+                {
+                    road_wide_draw_right_line();//右边道宽补线
+                }
+                if(right_up_point==0)
                 {
                     circle_flag=0;//环岛标志置0
                     right_circle_flag=0;//右圆环标志置0
-                    err_start_point=47;
-                    err_end_point=52;
+                    encoder_sum=0;//编码器积分清零
                     if(car_go)
                     {
                         beep_on();//蜂鸣器响
