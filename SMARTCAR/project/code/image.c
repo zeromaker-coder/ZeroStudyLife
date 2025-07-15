@@ -1838,8 +1838,8 @@ void ramp_judge(void)
     right_variance = calculate_line_variance(2, 0, 59);   // 右边界方差
     
     // 计算边界连续性
-    left_continuity = calculate_line_continuity(1, 0, 69);
-    right_continuity = calculate_line_continuity(2, 0, 69);
+    left_continuity = calculate_line_continuity(1, 0, 119);
+    right_continuity = calculate_line_continuity(2, 0, 119);
     
     // 计算边界斜率
     left_slope = calculate_line_slope(1, 0, 35);
@@ -1868,8 +1868,8 @@ void ramp_judge(void)
         }
         
         // 斜率检测
-        if (judge_time >= 1 && left_slope > -1.4 && left_slope < 0 && 
-            right_slope > 0 && right_slope < 1.4)
+        if (judge_time >= 1 && left_slope > -0.8 && left_slope < 0 && 
+            right_slope > 0 && right_slope < 0.8)
         {
             ramp_up_flag = 1;
             ramp_flag = 1;
@@ -1884,12 +1884,12 @@ void ramp_judge(void)
     
     // 坡顶检测
     if (ramp_flag == 1 && ramp_up_flag == 1 && 
-        left_continuity < 60 && right_continuity < 60)
+        left_continuity > 105 && right_continuity > 105)
     {
         ramp_up_flag = 0;
         ramp_top_flag = 1;
         ramp_timer = 0;
-        
+        encoder_sum = 0;  // 清零编码器积分
         if(car_go)
         {
             beep_on();  // 蜂鸣器提示
@@ -1918,7 +1918,7 @@ void ramp_judge(void)
     if (ramp_down_flag == 1)
     {
         ramp_timer++;
-        if (ramp_timer > 50)  // 下坡一定时间后结束
+        if (ramp_timer > 30)  // 下坡一定时间后结束
         {
             ramp_down_flag = 0;
             ramp_protect = 1;
@@ -1930,7 +1930,7 @@ void ramp_judge(void)
     if (ramp_protect == 1)
     {
         ramp_timer++;
-        if (ramp_timer > 50)  // 保护时间2秒
+        if (ramp_timer > 30)  // 保护时间2秒
         {
             ramp_protect = 0;
             ramp_flag=0;

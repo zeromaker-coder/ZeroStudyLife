@@ -4,6 +4,7 @@
 #include "beep.h"
 #include "encoder.h"
 #include "math.h"
+#include "image.h"
 
 uint8 motor_speed_count = 0;                                                   // 电机速度计数器
 
@@ -95,6 +96,7 @@ void motor_speed_protection(void)
             encoder_data_right_last=0; // 重置编码器数据
             encoder_data_left = 0;
             encoder_data_right = 0; // 重置编码器数据
+            ramp_xianzhi=0; // 重置坡道限制
         }
     }
     else
