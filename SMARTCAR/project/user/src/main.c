@@ -127,6 +127,7 @@ int main(void)
         }
         else
         {
+            ramp_xianzhi++;//坡道计时器
             if(KEY_SHORT_PRESS==key_get_state(KEY_1)||image_out_of_bounds(mt9v03x_image)||zebra_flag)//按键1短按
             {
                 car_go=0;//停止
@@ -139,6 +140,7 @@ int main(void)
                 encoder_data_right_last=0; // 重置编码器数据
                 encoder_data_left = 0;
                 encoder_data_right = 0; // 重置编码器数据
+                ramp_xianzhi=0;//重置坡道计时器
             }
             // sprintf(data_buffer,"%d\r\n",right_circle_flag);
             // wireless_uart_send_string(data_buffer);//发送右圆环状态

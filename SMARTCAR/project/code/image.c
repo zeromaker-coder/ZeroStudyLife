@@ -92,6 +92,11 @@ uint8 circle_flag; //环岛标志位
 uint8 right_circle_flag; //右环岛标志
 uint8 straight_flag=0; //直线标志位
 uint8 zebra_flag=0; //斑马线标志位
+uint8 ramp_flag=0; //坡道标志位
+uint8 ramp_up_flag = 0;           // 上坡标志
+uint8 ramp_top_flag = 0;          // 坡顶标志
+uint8 ramp_down_flag = 0;         // 下坡标
+uint8 ramp_protect = 0;           // 坡道保护标志志
 
 //右环岛处理中间变量
 uint8 continuity_left_change_flag=0;//左边连续变化标志
@@ -101,6 +106,9 @@ uint8 right_change_line=0;//右边突变点
 uint8 err_start_point=47; //误差起始点
 uint8 err_end_point=52;   //误差终止点
 int16 encoder_sum;//圆环状态编码器计数
+
+//坡道相关变量
+int16 ramp_xianzhi=0; //坡道计时器
 
 
 //误差权重数组(后期使用)
@@ -605,6 +613,11 @@ void longest_white_sweep_line(uint8 image[DEAL_IMAGE_H][DEAL_IMAGE_W])
         zebra_judge();//判断斑马线
     }
 
+    if(ramp_xianzhi>50)
+    {
+        ramp_judge();//判断坡道
+    }
+    
     circle_judge();//判断环岛
 
     cross_judge();//判断十字
@@ -1300,7 +1313,7 @@ uint8 find_right_change(uint8 start_point,uint8 end_point)
 
     for(uint8 i=start_point;i>end_point;i--)
     {
-        if(abs(right_line[i]-right_line[i-5])<=10&&abs(right_line[i]-right_line[i+5])<=12)//如果当前点与前后5个点相差小于10
+        if(abs(right_line[i]-right_line[i-5])<=10&&abs(right_line[i]-right_line[i+5])<=14)//如果当前点与前后5个点相差小于10
         {
             if(right_line[i]==right_line[i-5]&&right_line[i]==right_line[i+5]&&
             right_line[i]==right_line[i-4]&&right_line[i]==right_line[i+4]&&
@@ -1422,7 +1435,6 @@ uint8 straight_judge(void)
 **/
 void cross_judge(void)
 {
-    cross_flag=0;//十字标志清零
 
     if(!circle_flag)
     {
@@ -1465,6 +1477,10 @@ void cross_judge(void)
                     lenthen_right_line(right_up_point-1,DEAL_IMAGE_H-1);//右边延长
                 }
             }
+            else
+            {
+                cross_flag=0;//十字标志清零
+            } 
         }
     }
 }
@@ -1473,7 +1489,6 @@ void cross_judge(void)
 /**
 *
 * @brief  判断斑马线状态
-* @retval 斑马线状态，0表示不是斑马线，1表示是斑马线
 **/
 void zebra_judge(void)
 {
@@ -1556,7 +1571,7 @@ void circle_judge(void)
             if(right_circle_flag==1)
             {    
                 road_wide_draw_right_line();//右边道宽补线
-                if(right_change_line>50&&right_up_point)//右边突点坐标过大并且有右上拐点
+                if(right_change_line>47&&right_up_point)//右边突点坐标过大并且有右上拐点
                 {
                     right_circle_flag=2;//右圆环标志置2
                     if(car_go)
@@ -1654,6 +1669,287 @@ void circle_judge(void)
         }
     }
 }
+
+
+/**
+*
+* @brief  计算边界连续性
+* @param  side 1-左边界 2-右边界
+* @param  start_row 起始行
+* @param  end_row 结束行
+* @retval 连续性长度
+**/
+uint8 calculate_line_continuity(uint8 side, uint8 start_row, uint8 end_row)
+{
+    uint8 continuity_count = 0;
+    uint8 max_continuity = 0;
+    uint8 current_continuity = 0;
+    
+    for (int i = start_row; i < end_row && i < DEAL_IMAGE_H - 1; i++)
+    {
+        int diff;
+        if (side == 1)  // 左边界
+        {
+            diff = abs(left_line[i] - left_line[i + 1]);
+        }
+        else  // 右边界
+        {
+            diff = abs(right_line[i] - right_line[i + 1]);
+        }
+        
+        if (diff <= 3)  // 连续性阈值
+        {
+            current_continuity++;
+        }
+        else
+        {
+            if (current_continuity > max_continuity)
+            {
+                max_continuity = current_continuity;
+            }
+            current_continuity = 0;
+        }
+    }
+    
+    if (current_continuity > max_continuity)
+    {
+        max_continuity = current_continuity;
+    }
+    
+    return max_continuity;
+}
+
+
+/**
+*
+* @brief  计算边界斜率
+* @param  side 1-左边界 2-右边界
+* @param  start_row 起始行
+* @param  end_row 结束行
+* @retval 斜率值
+**/
+float calculate_line_slope(uint8 side, uint8 start_row, uint8 end_row)
+{
+    float sum_x = 0, sum_y = 0, sum_xy = 0, sum_x2 = 0;
+    uint8 count = 0;
+    
+    for (int i = start_row; i <= end_row && i < DEAL_IMAGE_H; i++)
+    {
+        float x = i;  // 行号作为x
+        float y;
+        
+        if (side == 1)  // 左边界
+        {
+            y = left_line[i];
+        }
+        else  // 右边界
+        {
+            y = right_line[i];
+        }
+        
+        sum_x += x;
+        sum_y += y;
+        sum_xy += x * y;
+        sum_x2 += x * x;
+        count++;
+    }
+    
+    if (count > 1)
+    {
+        float slope = (count * sum_xy - sum_x * sum_y) / (count * sum_x2 - sum_x * sum_x);
+        return slope;
+    }
+    
+    return 0;
+}
+
+/**
+*
+* @brief  计算边界方差
+* @param  side 1-左边界 2-右边界
+* @param  start_row 起始行
+* @param  end_row 结束行
+* @retval 方差值
+**/
+float calculate_line_variance(uint8 side, uint8 start_row, uint8 end_row)
+{
+    float sum = 0;
+    float mean = 0;
+    float variance = 0;
+    uint8 count = 0;
+    
+    // 计算均值
+    for (int i = start_row; i <= end_row && i < DEAL_IMAGE_H; i++)
+    {
+        if (side == 1)  // 左边界
+        {
+            sum += left_line[i];
+        }
+        else  // 右边界
+        {
+            sum += right_line[i];
+        }
+        count++;
+    }
+    
+    if (count > 0)
+    {
+        mean = sum / count;
+        
+        // 计算方差
+        for (int i = start_row; i <= end_row && i < DEAL_IMAGE_H; i++)
+        {
+            float diff;
+            if (side == 1)
+            {
+                diff = left_line[i] - mean;
+            }
+            else
+            {
+                diff = right_line[i] - mean;
+            }
+            variance += diff * diff;
+        }
+        variance = variance / count;
+    }
+    
+    return variance;
+}
+
+/**
+*
+* @brief  坡道判断函数
+**/
+void ramp_judge(void)
+{
+    static uint32 ramp_timer = 0;            // 坡道计时器
+    
+    uint8 judge_time = 0;                    // 判断计时
+    float left_variance = 0;                 // 左边界方差
+    float right_variance = 0;                // 右边界方差
+    uint8 left_continuity = 0;               // 左边界连续性
+    uint8 right_continuity = 0;              // 右边界连续性
+    float left_slope = 0;                    // 左边界斜率
+    float right_slope = 0;                   // 右边界斜率
+    
+    
+    // 计算边界方差
+    left_variance = calculate_line_variance(1, 0, 59);    // 左边界方差
+    right_variance = calculate_line_variance(2, 0, 59);   // 右边界方差
+    
+    // 计算边界连续性
+    left_continuity = calculate_line_continuity(1, 0, 69);
+    right_continuity = calculate_line_continuity(2, 0, 69);
+    
+    // 计算边界斜率
+    left_slope = calculate_line_slope(1, 0, 35);
+    right_slope = calculate_line_slope(2, 0, 35);
+    
+    // 上坡检测
+    if (ramp_protect == 0 && ramp_down_flag == 0 && ramp_flag == 0 && 
+        left_continuity >= 55 && right_continuity >= 55 && 
+        right_variance >= 0 && right_variance < 120 && 
+        left_variance >= 0 && left_variance < 120)
+    {
+        // 检查赛道宽度特征
+        if (real_road_wide[40] >= road_wide[40] && real_road_wide[45] >= road_wide[45] && 
+            real_road_wide[50] >= road_wide[50] && real_road_wide[55] >= road_wide[55] && 
+            search_stop_line > 80 && 
+            !(left_line[50] < (DEAL_IMAGE_W - 3) && right_line[50] > 0))
+        {
+            judge_time = 1;
+        }
+        else if (real_road_wide[40] >= road_wide[40]+10 && real_road_wide[45] >= road_wide[45]+10 && 
+                 real_road_wide[50] >= road_wide[50]+10 && real_road_wide[55] >= road_wide[55]+10 && 
+                 search_stop_line > 80 && 
+                 left_line[50] < (DEAL_IMAGE_W - 3) && right_line[50] > 0)
+        {
+            judge_time = 1;
+        }
+        
+        // 斜率检测
+        if (judge_time >= 1 && left_slope > -1.4 && left_slope < 0 && 
+            right_slope > 0 && right_slope < 1.4)
+        {
+            ramp_up_flag = 1;
+            ramp_flag = 1;
+            ramp_timer = 0;
+            
+            if(car_go)
+            {
+                beep_on();  // 蜂鸣器提示
+            }
+        }
+    }
+    
+    // 坡顶检测
+    if (ramp_flag == 1 && ramp_up_flag == 1 && 
+        left_continuity < 60 && right_continuity < 60)
+    {
+        ramp_up_flag = 0;
+        ramp_top_flag = 1;
+        ramp_timer = 0;
+        
+        if(car_go)
+        {
+            beep_on();  // 蜂鸣器提示
+        }
+    }
+    
+    // 下坡检测
+    if (ramp_top_flag == 1 && search_stop_line >= 55 && 
+        (left_continuity >= 40 || right_continuity >= 40) && 
+        real_road_wide[10] >= 99 && real_road_wide[20] >= 95 && 
+        real_road_wide[25] >= 90)
+    {
+        ramp_flag = 0;
+        ramp_up_flag = 0;
+        ramp_top_flag = 0;
+        ramp_down_flag = 1;
+        ramp_timer = 0;
+        
+        if(car_go)
+        {
+            beep_on();  // 蜂鸣器提示
+        }
+    }
+    
+    // 坡道结束检测
+    if (ramp_down_flag == 1)
+    {
+        ramp_timer++;
+        if (ramp_timer > 50)  // 下坡一定时间后结束
+        {
+            ramp_down_flag = 0;
+            ramp_protect = 1;
+            ramp_timer = 0;
+        }
+    }
+    
+    // 坡道保护计时
+    if (ramp_protect == 1)
+    {
+        ramp_timer++;
+        if (ramp_timer > 50)  // 保护时间2秒
+        {
+            ramp_protect = 0;
+            ramp_flag=0;
+            ramp_timer = 0;
+            if(car_go)
+            {
+                beep_on();  // 蜂鸣器提示
+            }
+        }
+    }
+
+    
+    // 设置坡道标志
+    if (ramp_up_flag || ramp_top_flag || ramp_down_flag)
+    {
+        ramp_flag = 1;
+    }
+}
+
 
 
 

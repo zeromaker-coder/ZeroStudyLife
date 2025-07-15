@@ -179,17 +179,21 @@ void angle_pid_location(void)
 */
 void speed_pid_loacation(void)
 {
-    if(straight_flag)
+    if(straight_flag&&!right_circle_flag&&!ramp_flag&&!cross_flag)
     {
-        speed_pid_out=-PID_location(user_param.target_speed,(encoder_data_right+encoder_data_left)/2,speed_pid_pin);
+        speed_pid_out=-PID_location(user_param.target_speed+up_speed*0.5,(encoder_data_right+encoder_data_left)/2,speed_pid_pin);
     }
-    else if(right_circle_flag)
+    else if(right_circle_flag||ramp_down_flag||ramp_protect)
     {
-        speed_pid_out=-PID_location(user_param.target_speed-up_speed*2,(encoder_data_right+encoder_data_left)/2,speed_pid_pin);
+        speed_pid_out=-PID_location(user_param.target_speed-up_speed*2.5,(encoder_data_right+encoder_data_left)/2,speed_pid_pin);
+    }
+    else if(ramp_up_flag)
+    {
+        speed_pid_out=-PID_location(user_param.target_speed+up_speed*4,(encoder_data_right+encoder_data_left)/2,speed_pid_pin);
     }
     else
     {
-        speed_pid_out=-PID_location(user_param.target_speed+up_speed*0.5,(encoder_data_right+encoder_data_left)/2,speed_pid_pin);
+        speed_pid_out=-PID_location(user_param.target_speed,(encoder_data_right+encoder_data_left)/2,speed_pid_pin);
     }
 }
     

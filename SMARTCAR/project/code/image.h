@@ -38,6 +38,8 @@ void circle_judge(void);
 
 void cross_judge(void);
 
+void ramp_judge(void);
+
 uint8 straight_judge(void);
 
 void zebra_judge(void);
@@ -91,6 +93,20 @@ extern uint8 zebra_flag;
 extern uint8 right_circle_flag;
 
 extern int16 encoder_sum;
+
+extern int16 ramp_xianzhi;
+
+extern uint8 ramp_flag;
+
+extern uint8 ramp_up_flag;
+
+extern uint8 ramp_top_flag;
+
+extern uint8 ramp_down_flag;
+
+extern uint8 cross_flag;
+
+extern uint8 ramp_protect;
 
 extern const unsigned char Image_Flags[9*32];
 
