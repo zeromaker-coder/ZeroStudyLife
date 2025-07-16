@@ -97,6 +97,8 @@ void motor_speed_protection(void)
             encoder_data_left = 0;
             encoder_data_right = 0; // 重置编码器数据
             ramp_xianzhi=0; // 重置坡道限制
+            ramp_once_time=0; // 重置坡道标志位单次触发
+            circle_once_time=0; // 重置环岛标志位单次触发
         }
     }
     else

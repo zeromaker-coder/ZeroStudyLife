@@ -96,10 +96,10 @@ int main(void)
     interrupt_set_priority(PIT_PRIORITY,0);
     interrupt_set_priority(menu_imu_PIT_PRIORITY,0);
     
-    gpio_set_level(BEEP, GPIO_HIGH);                                            // BEEP 响
-    system_delay_ms(100);
-    gpio_set_level(BEEP, GPIO_LOW);                                             // BEEP 停
-    system_delay_ms(100);
+    // gpio_set_level(BEEP, GPIO_HIGH);                                            // BEEP 响
+    // system_delay_ms(100);
+    // gpio_set_level(BEEP, GPIO_LOW);                                             // BEEP 停
+    // system_delay_ms(100);
 
 
     while(1)
@@ -116,7 +116,7 @@ int main(void)
 
         if(image_count%5==0)
         {
-							image_threshold=otsu_get_threshold(mt9v03x_image, MT9V03X_W, MT9V03X_H);//图像获取阈值
+			image_threshold=otsu_get_threshold(mt9v03x_image, MT9V03X_W, MT9V03X_H);//图像获取阈值
         }
 
         if(!car_go)
@@ -135,12 +135,14 @@ int main(void)
                 sec_menu_item=1;
                 pid_clear_all();
                 key_clear_all_state();//清除按键状态
-                beep_on();//蜂鸣器响
+                // beep_on();//蜂鸣器响
                 encoder_data_left_last=0;
                 encoder_data_right_last=0; // 重置编码器数据
                 encoder_data_left = 0;
                 encoder_data_right = 0; // 重置编码器数据
                 ramp_xianzhi=0;//重置坡道计时器
+                ramp_once_time=0;//重置坡道单次保护
+                circle_once_time=0;//重置环岛单次保护
             }
             // sprintf(data_buffer,"%d\r\n",right_circle_flag);
             // wireless_uart_send_string(data_buffer);//发送右圆环状态

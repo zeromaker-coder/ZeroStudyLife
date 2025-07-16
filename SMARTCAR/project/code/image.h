@@ -108,6 +108,12 @@ extern uint8 cross_flag;
 
 extern uint8 ramp_protect;
 
+extern uint8 ramp_once_time;
+
+extern uint8 circle_once_time;
+
+extern uint8 circle_flag;
+
 extern const unsigned char Image_Flags[9*32];
 
 #endif

@@ -89,6 +89,8 @@ uint8 right_up_point;//右上拐点
 //元素标志位
 uint8 cross_flag;//十字标志位
 uint8 circle_flag; //环岛标志位
+uint8 circle_once_time=0; //环岛标志位单次触发
+uint8 ramp_once_time=0; //坡道标志位单次触发
 uint8 right_circle_flag; //右环岛标志
 uint8 straight_flag=0; //直线标志位
 uint8 zebra_flag=0; //斑马线标志位
@@ -103,8 +105,8 @@ uint8 continuity_left_change_flag=0;//左边连续变化标志
 uint8 continuity_right_change_flag=0;//右边连续变化标志
 uint8 left_change_line=0;//左边突变点
 uint8 right_change_line=0;//右边突变点
-uint8 err_start_point=47; //误差起始点
-uint8 err_end_point=52;   //误差终止点
+uint8 err_start_point=44; //误差起始点
+uint8 err_end_point=50;   //误差终止点
 int16 encoder_sum;//圆环状态编码器计数
 
 //坡道相关变量
@@ -613,12 +615,15 @@ void longest_white_sweep_line(uint8 image[DEAL_IMAGE_H][DEAL_IMAGE_W])
         zebra_judge();//判断斑马线
     }
 
-    if(ramp_xianzhi>50)
+    if(ramp_xianzhi>50&&!ramp_once_time)
     {
         ramp_judge();//判断坡道
     }
     
-    circle_judge();//判断环岛
+    if(!circle_once_time)
+    {
+        circle_judge();//判断环岛
+    }
 
     cross_judge();//判断十字
 
@@ -1595,8 +1600,8 @@ void circle_judge(void)
                 if(encoder_sum>=17000)
                 {
                     right_circle_flag=3;//右圆环标志置0
-                    err_start_point=47;
-                    err_end_point=52;
+                    err_start_point=44;
+                    err_end_point=50;
                     if(car_go)
                     {
                         beep_on();//蜂鸣器响
@@ -1660,6 +1665,7 @@ void circle_judge(void)
                     circle_flag=0;//环岛标志置0
                     right_circle_flag=0;//右圆环标志置0
                     encoder_sum=0;//编码器积分清零
+                    circle_once_time=1;//环岛一次标志置1
                     if(car_go)
                     {
                         beep_on();//蜂鸣器响
@@ -1868,8 +1874,8 @@ void ramp_judge(void)
         }
         
         // 斜率检测
-        if (judge_time >= 1 && left_slope > -0.8 && left_slope < 0 && 
-            right_slope > 0 && right_slope < 0.8)
+        if (judge_time >= 1 && left_slope > -0.55 && left_slope < 0 && 
+            right_slope > 0 && right_slope < 0.55)
         {
             ramp_up_flag = 1;
             ramp_flag = 1;
@@ -1930,9 +1936,10 @@ void ramp_judge(void)
     if (ramp_protect == 1)
     {
         ramp_timer++;
-        if (ramp_timer > 30)  // 保护时间2秒
+        if (ramp_timer > 50)  // 保护时间2秒
         {
             ramp_protect = 0;
+            ramp_once_time=1;
             ramp_flag=0;
             ramp_timer = 0;
             if(car_go)
