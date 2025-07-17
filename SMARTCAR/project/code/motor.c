@@ -80,7 +80,7 @@ void motor_set_duty(int16 motor_left, int16 motor_right)
   */
 void motor_speed_protection(void)
 {
-    if(abs(gyro_pid_out) > 4500||abs(encoder_data_left-encoder_data_left_last)>35||abs(encoder_data_right-encoder_data_right_last)>35) // 如果 PID 输出大于最大占空比
+    if(abs(gyro_pid_out) > 4500||abs(encoder_data_left-encoder_data_left_last)>65||abs(encoder_data_right-encoder_data_right_last)>65) // 如果 PID 输出大于最大占空比
     {
         motor_speed_count++; // 电机速度计数器加 1
         if(motor_speed_count > 2)
@@ -91,7 +91,7 @@ void motor_speed_protection(void)
             pid_clear_all();
             key_clear_all_state();//清除按键状态
             motor_speed_count=0;
-            beep_on();//蜂鸣器响
+            //beep_on();//蜂鸣器响
             encoder_data_left_last=0;
             encoder_data_right_last=0; // 重置编码器数据
             encoder_data_left = 0;

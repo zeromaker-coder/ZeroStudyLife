@@ -149,7 +149,7 @@ void main_menu(void)
                 ips200_clear();
                 ips200_show_string(60, 160, "Param Saved!");
                 menu_save();
-                beep_on();
+                //beep_on();
                 system_delay_ms(50);
                 ips200_clear();
                 break;
@@ -158,7 +158,7 @@ void main_menu(void)
                 ips200_clear();
                 ips200_show_string(60, 160, "Param Loaded!");
                 menu_load();
-                beep_on();
+                //beep_on();
                 system_delay_ms(50);
                 ips200_clear();
                 break;
@@ -894,9 +894,11 @@ void Sec_Menu_05(void)
     ips200_show_string(16,30+16*4,"angle_out_max:");//角度环最大输出
     ips200_show_string(16,30+16*5,"speed_i_out_max:");//速度环i最大输出
     ips200_show_string(16,30+16*6,"speed_out_max:");//速度环最大输出
-    ips200_show_string(16,30+16*7,"turn_out_max");//转向环最大输出
-    ips200_show_string(16,30+16*8,"back");//返回上一级菜单
-    ips200_show_string(16,30+16*10,"change_item:");//修改量
+    ips200_show_string(16,30+16*7,"turn_out_max:");//转向环最大输出
+    ips200_show_string(16,30+16*8,"err_start:");//误差起点
+    ips200_show_string(16,30+16*9,"err_end:");//误差终点
+    ips200_show_string(16,30+16*10,"back");//返回上一级菜单
+    ips200_show_string(16,30+16*11,"change_item:");//修改量
 
 
     //显示数字
@@ -908,12 +910,14 @@ void Sec_Menu_05(void)
     ips200_show_float(150,30+16*5,speed_pid_param.PID_I_LIMIT_MAX,4,3);
     ips200_show_float(150,30+16*6,speed_pid_param.PID_OUT_LIMIT_MAX,4,3);
     ips200_show_float(150,30+16*7,turn_pid_param.PID_OUT_LIMIT_MAX,4,3);
-    ips200_show_float(150,30+16*10,change_item_num[change_item_i],4,3);
+    ips200_show_float(150,30+16*8,user_param.err_start,4,3);
+    ips200_show_float(150,30+16*9,user_param.err_end,4,3);
+    ips200_show_float(150,30+16*11,change_item_num[change_item_i],4,3);
 
     if(!change_mode)ips200_show_string(0,(sec_menu_item+1)*16,"->");//菜单指针
     else ips200_show_string(0,(sec_menu_item+1)*16,"*");
 
-    if(change_mode==2)ips200_show_string(0,30+10*16,"*");
+    if(change_mode==2)ips200_show_string(0,30+11*16,"*");
 
     key_scanner();//千万不要忘
 
@@ -924,7 +928,7 @@ void Sec_Menu_05(void)
             sec_menu_item--;
             if(sec_menu_item < 1) //如果副菜单指针小于1
             {
-                sec_menu_item = 9; //则将副菜单指针置为9
+                sec_menu_item = 11; //则将副菜单指针置为11
             }
             key_clear_state(KEY_1); //清除按键状态
             ips200_clear();//清屏
@@ -933,7 +937,7 @@ void Sec_Menu_05(void)
         if(KEY_SHORT_PRESS == key_get_state(KEY_2))
         {
             sec_menu_item++;
-            if(sec_menu_item > 9)//如果副菜单指针大于9
+            if(sec_menu_item > 11)//如果副菜单指针大于11
             {
                 sec_menu_item = 1; //则将副菜单指针置为1
             }
@@ -941,7 +945,7 @@ void Sec_Menu_05(void)
             ips200_clear();//清屏
         }
         //返回
-        if((sec_menu_item == 9 && KEY_SHORT_PRESS == key_get_state(KEY_3))||KEY_SHORT_PRESS == key_get_state(KEY_4))
+        if((sec_menu_item == 11 && KEY_SHORT_PRESS == key_get_state(KEY_3))||KEY_SHORT_PRESS == key_get_state(KEY_4))
         {
             //返回主菜单
             main_menu_item = 1;
@@ -951,7 +955,7 @@ void Sec_Menu_05(void)
             ips200_clear();//清屏
         }
         
-        if(sec_menu_item>=1&&sec_menu_item<=8 && KEY_SHORT_PRESS == key_get_state(KEY_3))
+        if(sec_menu_item>=1&&sec_menu_item<=10 && KEY_SHORT_PRESS == key_get_state(KEY_3))
         {
             change_mode=1;
             key_clear_state(KEY_3);//清除按键状态
@@ -1149,6 +1153,56 @@ void Sec_Menu_05(void)
                     else if(KEY_SHORT_PRESS == key_get_state(KEY_2))
                     {
                         turn_pid_param.PID_OUT_LIMIT_MAX-= change_item_num[change_item_i];
+                        key_clear_state(KEY_2); //清除按键状态
+                        ips200_clear();//清屏
+                    }
+                    else if(KEY_SHORT_PRESS == key_get_state(KEY_3))
+                    {
+                        change_mode=2;//修改加减量模式
+                        key_clear_state(KEY_3); //清除按键状态
+                        ips200_clear();//清屏
+                    }
+                    else if(KEY_SHORT_PRESS == key_get_state(KEY_4))
+                    {
+                        change_mode=0;
+                        key_clear_state(KEY_4); //清除按键状态
+                        ips200_clear();//清屏
+                    }
+                case 9:
+                    if(KEY_SHORT_PRESS == key_get_state(KEY_1))
+                    {
+                        user_param.err_start+= change_item_num[change_item_i]; 
+                        key_clear_state(KEY_1); //清除按键状态
+                        ips200_clear();//清屏
+                    }
+                    else if(KEY_SHORT_PRESS == key_get_state(KEY_2))
+                    {
+                        user_param.err_start-= change_item_num[change_item_i];
+                        key_clear_state(KEY_2); //清除按键状态
+                        ips200_clear();//清屏
+                    }
+                    else if(KEY_SHORT_PRESS == key_get_state(KEY_3))
+                    {
+                        change_mode=2;//修改加减量模式
+                        key_clear_state(KEY_3); //清除按键状态
+                        ips200_clear();//清屏
+                    }
+                    else if(KEY_SHORT_PRESS == key_get_state(KEY_4))
+                    {
+                        change_mode=0;
+                        key_clear_state(KEY_4); //清除按键状态
+                        ips200_clear();//清屏
+                    }
+                case 10:
+                    if(KEY_SHORT_PRESS == key_get_state(KEY_1))
+                    {
+                        user_param.err_end+= change_item_num[change_item_i]; 
+                        key_clear_state(KEY_1); //清除按键状态
+                        ips200_clear();//清屏
+                    }
+                    else if(KEY_SHORT_PRESS == key_get_state(KEY_2))
+                    {
+                        user_param.err_end-= change_item_num[change_item_i];
                         key_clear_state(KEY_2); //清除按键状态
                         ips200_clear();//清屏
                     }

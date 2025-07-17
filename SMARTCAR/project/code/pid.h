@@ -47,6 +47,8 @@ typedef struct
 {
   float mid_angle;
   float target_speed;
+  float err_start; 
+  float err_end;   
 }USER_PARAM_LocTypeDef;
 
 

@@ -122,6 +122,8 @@ int main(void)
         if(!car_go)
         {
             menu();
+            err_start_point=user_param.err_start;//错误起始点
+            err_end_point=user_param.err_end;//错误终止点
             // sprintf(data_buffer,"%.1f\r\n",filtering_angle);
             // wireless_uart_send_string(data_buffer);//发送角度信息
         }

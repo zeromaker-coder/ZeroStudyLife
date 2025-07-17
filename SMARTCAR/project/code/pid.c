@@ -56,6 +56,8 @@ void pid_init(void)
     turn_pid_param.ek=0.0;
     turn_pid_param.ek1=0.0;
     turn_pid_param.location_sum=0.0;
+    err_start_point=user_param.err_start; //误差起点
+    err_end_point=user_param.err_end; //误差终点
 }
 
 /**
@@ -190,7 +192,7 @@ void speed_pid_loacation(void)
 {
     if(straight_flag&&!right_circle_flag&&!ramp_flag&&!cross_flag)
     {
-        speed_pid_out=-PID_location(user_param.target_speed+up_speed*0.5,(encoder_data_right+encoder_data_left)/2,speed_pid_pin);
+        speed_pid_out=-PID_location(user_param.target_speed+up_speed*1,(encoder_data_right+encoder_data_left)/2,speed_pid_pin);
     }
     else if(right_circle_flag||ramp_down_flag||ramp_protect)
     {

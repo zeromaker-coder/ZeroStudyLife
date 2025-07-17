@@ -105,8 +105,8 @@ uint8 continuity_left_change_flag=0;//左边连续变化标志
 uint8 continuity_right_change_flag=0;//右边连续变化标志
 uint8 left_change_line=0;//左边突变点
 uint8 right_change_line=0;//右边突变点
-uint8 err_start_point=44; //误差起始点
-uint8 err_end_point=50;   //误差终止点
+uint8 err_start_point; //误差起始点
+uint8 err_end_point;   //误差终止点
 int16 encoder_sum;//圆环状态编码器计数
 
 //坡道相关变量
@@ -615,15 +615,15 @@ void longest_white_sweep_line(uint8 image[DEAL_IMAGE_H][DEAL_IMAGE_W])
         zebra_judge();//判断斑马线
     }
 
-    if(ramp_xianzhi>50&&!ramp_once_time)
-    {
-        ramp_judge();//判断坡道
-    }
+    // if(ramp_xianzhi>50&&!ramp_once_time)
+    // {
+    //     ramp_judge();//判断坡道
+    // }
     
-    if(!circle_once_time)
-    {
-        circle_judge();//判断环岛
-    }
+    // if(!circle_once_time)
+    // {
+    //     circle_judge();//判断环岛
+    // }
 
     cross_judge();//判断十字
 
@@ -1562,8 +1562,8 @@ void circle_judge(void)
                 }
                 right_circle_flag=1;//右圆环标志置1
                 circle_flag=1;//环岛标志置1
-                err_start_point=60;
-                err_end_point=65;
+                err_start_point=user_param.err_start+15;//错误起始点
+                err_end_point=user_param.err_end+15;//错误终止点
             }
             else
             {
@@ -1600,8 +1600,6 @@ void circle_judge(void)
                 if(encoder_sum>=17000)
                 {
                     right_circle_flag=3;//右圆环标志置0
-                    err_start_point=44;
-                    err_end_point=50;
                     if(car_go)
                     {
                         beep_on();//蜂鸣器响
@@ -1666,6 +1664,8 @@ void circle_judge(void)
                     right_circle_flag=0;//右圆环标志置0
                     encoder_sum=0;//编码器积分清零
                     circle_once_time=1;//环岛一次标志置1
+                    err_start_point=user_param.err_start;//错误起始点
+                    err_end_point=user_param.err_end;//错误终止点
                     if(car_go)
                     {
                         beep_on();//蜂鸣器响
@@ -1874,8 +1874,8 @@ void ramp_judge(void)
         }
         
         // 斜率检测
-        if (judge_time >= 1 && left_slope > -0.55 && left_slope < 0 && 
-            right_slope > 0 && right_slope < 0.55)
+        if (judge_time >= 1 && left_slope > -1.3 && left_slope < 0 && 
+            right_slope > 0 && right_slope < 1.3)
         {
             ramp_up_flag = 1;
             ramp_flag = 1;

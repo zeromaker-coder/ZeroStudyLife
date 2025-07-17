@@ -47,6 +47,9 @@ void menu_save(void)
     flash_union_buffer[16].float_type = user_param.mid_angle;
     flash_union_buffer[17].float_type = user_param.target_speed;
 
+    flash_union_buffer[18].float_type = user_param.err_start;
+    flash_union_buffer[19].float_type = user_param.err_end;
+
     flash_write_page_from_buffer(FLASH_SECTION_INDEX, FLASH_PAGE_INDEX);        // 向指定 Flash 扇区的页码写入缓冲区数据
 }
 
@@ -84,6 +87,8 @@ void menu_load(void)
 
     user_param.mid_angle = flash_union_buffer[16].float_type;
     user_param.target_speed = flash_union_buffer[17].float_type;
+    user_param.err_start = flash_union_buffer[18].float_type;
+    user_param.err_end =  flash_union_buffer[19].float_type;
     
     flash_buffer_clear(); //擦除缓存区
 }
