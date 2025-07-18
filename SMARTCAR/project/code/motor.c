@@ -80,7 +80,7 @@ void motor_set_duty(int16 motor_left, int16 motor_right)
   */
 void motor_speed_protection(void)
 {
-    if(abs(gyro_pid_out) > 4500||abs(encoder_data_left-encoder_data_left_last)>65||abs(encoder_data_right-encoder_data_right_last)>65) // 如果 PID 输出大于最大占空比
+    if(abs(gyro_pid_out) > 4500||abs(encoder_data_left-encoder_data_left_last)>85||abs(encoder_data_right-encoder_data_right_last)>85) // 如果 PID 输出大于最大占空比
     {
         motor_speed_count++; // 电机速度计数器加 1
         if(motor_speed_count > 2)

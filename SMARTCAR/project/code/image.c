@@ -1546,13 +1546,13 @@ void circle_judge(void)
         find_up_point(DEAL_IMAGE_H-5,10);//寻找上拐点
         if(right_circle_flag==0)//处理右圆环
         {
-            if(continuity_left_change_flag<=30&&
+            if(continuity_left_change_flag<=50&&
             continuity_right_change_flag!=0&&
-            right_lost_count>=10&&right_lost_count<=100&&
+            right_lost_count>=10&&right_lost_count<=110&&
             left_right_lost_count<=10&&
-            boundary_start_left>=DEAL_IMAGE_H-15&&
-            boundary_start_right>=DEAL_IMAGE_H-15&&
-            search_stop_line>=113&&
+            boundary_start_left>=DEAL_IMAGE_H-20&&
+            boundary_start_right>=DEAL_IMAGE_H-20&&
+            search_stop_line>=110&&
             right_down_point
             )
             {

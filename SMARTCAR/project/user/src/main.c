@@ -122,8 +122,8 @@ int main(void)
         if(!car_go)
         {
             menu();
-            err_start_point=user_param.err_start;//错误起始点
-            err_end_point=user_param.err_end;//错误终止点
+            err_start_point=user_param.err_start;//误差起始点
+            err_end_point=user_param.err_end;//误差结束点
             // sprintf(data_buffer,"%.1f\r\n",filtering_angle);
             // wireless_uart_send_string(data_buffer);//发送角度信息
         }
@@ -151,7 +151,7 @@ int main(void)
             // sprintf(data_buffer,"%d\r\n",encoder_sum);
             // wireless_uart_send_string(data_buffer);//发送编码器计数
         }
-
+        // printf("%5d,%5d,%5d\r\n", imu660ra_gyro_x, imu660ra_gyro_y, imu660ra_gyro_z);
         beep_cycle();
     }
 }
