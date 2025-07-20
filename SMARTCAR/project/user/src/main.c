@@ -130,7 +130,7 @@ int main(void)
         else
         {
             ramp_xianzhi++;//坡道计时器
-            if(KEY_SHORT_PRESS==key_get_state(KEY_1)||image_out_of_bounds(mt9v03x_image)||zebra_flag)//按键1短按
+            if(KEY_SHORT_PRESS==key_get_state(KEY_1)/*||image_out_of_bounds(mt9v03x_image)*/||zebra_count_total>=2)//按键1短按
             {
                 car_go=0;//停止
                 main_menu_item=1;

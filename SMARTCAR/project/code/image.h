@@ -42,7 +42,7 @@ void ramp_judge(void);
 
 uint8 straight_judge(void);
 
-void zebra_judge(void);
+void zebra_judge_multi(void);
 
 extern uint8 left_down_point;
 
@@ -88,7 +88,7 @@ extern uint8 err_start_point;
 
 extern uint8 err_end_point;   
 
-extern uint8 zebra_flag;
+extern uint8 zebra_count_total;      
 
 extern uint8 right_circle_flag;
 

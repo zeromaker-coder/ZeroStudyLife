@@ -93,12 +93,16 @@ uint8 circle_once_time=0; //环岛标志位单次触发
 uint8 ramp_once_time=0; //坡道标志位单次触发
 uint8 right_circle_flag; //右环岛标志
 uint8 straight_flag=0; //直线标志位
-uint8 zebra_flag=0; //斑马线标志位
 uint8 ramp_flag=0; //坡道标志位
 uint8 ramp_up_flag = 0;           // 上坡标志
 uint8 ramp_top_flag = 0;          // 坡顶标志
 uint8 ramp_down_flag = 0;         // 下坡标
 uint8 ramp_protect = 0;           // 坡道保护标志志
+uint8 zebra_count_total = 0;      // 斑马线总计数
+uint8 zebra_detect_state = 0;     // 斑马线检测状态 0:未检测 1:检测中 2:已通过
+uint16 zebra_clear_timer = 0;     // 斑马线清除计时器
+uint8 zebra_last_flag = 0;        // 上次斑马线标志
+uint8 zebra_flag = 0;          // 斑马线标志位
 
 //右环岛处理中间变量
 uint8 continuity_left_change_flag=0;//左边连续变化标志
@@ -612,7 +616,7 @@ void longest_white_sweep_line(uint8 image[DEAL_IMAGE_H][DEAL_IMAGE_W])
 
     if(car_go)
     {
-        zebra_judge();//判断斑马线
+        zebra_judge_multi();//判断斑马线
     }
 
     // if(ramp_xianzhi>50&&!ramp_once_time)
@@ -1412,9 +1416,9 @@ uint8 straight_judge(void)
 {
     if(search_stop_line>=110)
     {
-        if(boundary_start_left>=110&&boundary_start_right>=110&&left_lost_count<10&&right_lost_count<10&&left_right_lost_count<10)
+        if(boundary_start_left>=115&&boundary_start_right>=115&&left_lost_count<10&&right_lost_count<10&&left_right_lost_count<10)
         {
-            if(abs(line_err)<=8)
+            if(abs(line_err)<=7)
             {
                 return 1;//直道
             }
@@ -1491,36 +1495,99 @@ void cross_judge(void)
 }
 
 
+
 /**
 *
-* @brief  判断斑马线状态
+* @brief  判断斑马线状态（支持多次识别）
 **/
-void zebra_judge(void)
+void zebra_judge_multi(void)
 {
-    uint8 zebra_count=0;
-    zebra_flag=0;//斑马线标志清零
-    if(longest_white_left[1]>20&&longest_white_right[1]<DEAL_IMAGE_W-20&&
-        longest_white_right[1]>20&&longest_white_left[1]<DEAL_IMAGE_W-20&&
-        search_stop_line>=110&&
-    boundary_start_left>=DEAL_IMAGE_H-20&&
-    boundary_start_right>=DEAL_IMAGE_H-20)
+    uint8 zebra_count = 0;
+    uint8 zebra_detected = 0;  // 当前帧是否检测到斑马线
+    
+    // 基本条件检查
+    if(longest_white_left[1] > 20 && longest_white_right[1] < DEAL_IMAGE_W - 20 &&
+       longest_white_right[1] > 20 && longest_white_left[1] < DEAL_IMAGE_W - 20 &&
+       search_stop_line >= 110 &&
+       boundary_start_left >= DEAL_IMAGE_H - 20 &&
+       boundary_start_right >= DEAL_IMAGE_H - 20)
+    {
+        // 检测斑马线特征
+        for(int i = DEAL_IMAGE_H - 1; i >= DEAL_IMAGE_H - 3; i--) 
         {
-            for(int i=DEAL_IMAGE_H-1;i>=DEAL_IMAGE_H-3;i--)
+            zebra_count = 0;  // 每行重新计数
+            for(int j = 0; j <= DEAL_IMAGE_W - 1 - 3; j++)
             {
-                for(int j=0;j<=DEAL_IMAGE_W-1-3;j++)
+                // 检测白黑黑模式
+                if(binary_image[i][j] == 1 && binary_image[i][j+1] == 0 && binary_image[i][j+2] == 0)
                 {
-                    if(binary_image[i][j]==1&&binary_image[i][j+1]==0&&binary_image[i][j+2]==0)
-                    {
-                        zebra_count++;
-                    }
-                }
-                if(zebra_count>=10)//如果黑色计数大于等于40，认为是斑马线
-                {
-                    zebra_flag=1;
+                    zebra_count++;
                 }
             }
+            
+            // 如果某一行的跳变次数足够多，认为检测到斑马线
+            if(zebra_count >= 8)  // 适当降低阈值提高检测率
+            {
+                zebra_detected = 1;
+                break;
+            }
         }
+    }
+    
+    // 状态机处理斑马线识别
+    switch(zebra_detect_state)
+    {
+        case 0:  // 未检测状态
+            if(zebra_detected)
+            {
+                zebra_detect_state = 1;  // 进入检测中状态
+                zebra_clear_timer = 0;
+                zebra_flag = 1;
+                zebra_count_total++;     // 斑马线计数加1
+                
+                if(car_go)
+                {
+                    beep_on();  // 蜂鸣器提示
+                }
+            }
+            else
+            {
+                zebra_flag = 0;
+            }
+            break;
+            
+        case 1:  // 检测中状态
+            if(zebra_detected)
+            {
+                zebra_flag = 1;
+                zebra_clear_timer = 0;  // 重置计时器
+            }
+            else
+            {
+                zebra_clear_timer++;
+                if(zebra_clear_timer >= 5)  // 连续5帧未检测到，进入已通过状态
+                {
+                    zebra_detect_state = 2;
+                    zebra_flag = 0;
+                    zebra_clear_timer = 0;
+                }
+            }
+            break;
+            
+        case 2:  // 已通过状态
+            zebra_flag = 0;
+            zebra_clear_timer++;
+            if(zebra_clear_timer >= 20)  // 等待20帧后恢复到未检测状态
+            {
+                zebra_detect_state = 0;
+                zebra_clear_timer = 0;
+            }
+            break;
+    }
+     
+    zebra_last_flag = zebra_flag;
 }
+
 
 
 /**
