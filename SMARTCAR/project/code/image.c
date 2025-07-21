@@ -117,6 +117,9 @@ int16 encoder_sum;//圆环状态编码器计数
 int16 ramp_xianzhi=0; //坡道计时器
 
 
+extern uint8 data_buffer[100];//无线转串口数据缓冲区
+
+
 //误差权重数组(后期使用)
 const uint8 weight[DEAL_IMAGE_H]= 
 {
@@ -624,10 +627,9 @@ void longest_white_sweep_line(uint8 image[DEAL_IMAGE_H][DEAL_IMAGE_W])
     //     ramp_judge();//判断坡道
     // }
     
-    // if(!circle_once_time)
-    // {
-    //     circle_judge();//判断环岛
-    // }
+
+    circle_judge();//判断环岛
+
 
     cross_judge();//判断十字
 
@@ -1143,12 +1145,12 @@ void circle_right_down_point(uint8 start_point,uint8 end_point)
     for(int i=start_point;i>=end_point;i--)
     {
         if(right_down_point==0&&
-            abs(right_line[i]-right_line[i+1])<=7&&
-            abs(right_line[i+1]-right_line[i+2])<=7&&
-            abs(right_line[i+2]-right_line[i+3])<=7&&
-            (right_line[i]-right_line[i-2])<=-5&&
-            (right_line[i]-right_line[i-3])<=-6&&
-            (right_line[i]-right_line[i-4])<=-6)
+            abs(right_line[i]-right_line[i+1])<=10&&
+            abs(right_line[i+1]-right_line[i+2])<=10&&
+            abs(right_line[i+2]-right_line[i+3])<=10&&
+            (right_line[i]-right_line[i-2])<=-3&&
+            (right_line[i]-right_line[i-3])<=-3&&
+            (right_line[i]-right_line[i-4])<=-3)
             {
                 right_down_point=i+3;
             }
@@ -1611,15 +1613,17 @@ void circle_judge(void)
         find_down_point(DEAL_IMAGE_H-20,60);//寻找下拐点
         circle_right_down_point(DEAL_IMAGE_H-5,80);//寻找右下拐点
         find_up_point(DEAL_IMAGE_H-5,10);//寻找上拐点
+        // sprintf(data_buffer,"%d,%d,%d,%d,%d,%d,%d,%d,%d,\r\n",continuity_left_change_flag,continuity_right_change_flag,left_lost_count,right_lost_count,left_right_lost_count,boundary_start_left,boundary_start_right,search_stop_line,right_down_point);
+        // wireless_uart_send_string(data_buffer);
         if(right_circle_flag==0)//处理右圆环
         {
-            if(continuity_left_change_flag<=50&&
+            if(continuity_left_change_flag<=35&&
             continuity_right_change_flag!=0&&
-            right_lost_count>=10&&right_lost_count<=110&&
-            left_right_lost_count<=10&&
-            boundary_start_left>=DEAL_IMAGE_H-20&&
-            boundary_start_right>=DEAL_IMAGE_H-20&&
-            search_stop_line>=110&&
+            right_lost_count>=8&&right_lost_count<=110&&
+            left_right_lost_count<=25&&
+            boundary_start_left>=DEAL_IMAGE_H-15&&
+            boundary_start_right>=DEAL_IMAGE_H-15&&
+            search_stop_line>=115&&
             right_down_point
             )
             {
@@ -1629,8 +1633,8 @@ void circle_judge(void)
                 }
                 right_circle_flag=1;//右圆环标志置1
                 circle_flag=1;//环岛标志置1
-                err_start_point=user_param.err_start+15;//错误起始点
-                err_end_point=user_param.err_end+15;//错误终止点
+                err_start_point=user_param.err_start+16;//错误起始点
+                err_end_point=user_param.err_end+16;//错误终止点
             }
             else
             {
@@ -1643,7 +1647,7 @@ void circle_judge(void)
             if(right_circle_flag==1)
             {    
                 road_wide_draw_right_line();//右边道宽补线
-                if(right_change_line>47&&right_up_point)//右边突点坐标过大并且有右上拐点
+                if(right_change_line>36&&right_up_point)//右边突点坐标过大并且有右上拐点
                 {
                     right_circle_flag=2;//右圆环标志置2
                     if(car_go)

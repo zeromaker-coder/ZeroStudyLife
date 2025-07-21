@@ -80,7 +80,7 @@ void motor_set_duty(int16 motor_left, int16 motor_right)
   */
 void motor_speed_protection(void)
 {
-    if(abs(gyro_pid_out) > 4500||abs(encoder_data_left-encoder_data_left_last)>85||abs(encoder_data_right-encoder_data_right_last)>85) // 如果 PID 输出大于最大占空比
+    if(abs(gyro_pid_out) > 4700||abs(encoder_data_left-encoder_data_left_last)>105||abs(encoder_data_right-encoder_data_right_last)>105) // 如果 PID 输出大于最大占空比
     {
         motor_speed_count++; // 电机速度计数器加 1
         if(motor_speed_count > 2)
@@ -99,6 +99,7 @@ void motor_speed_protection(void)
             ramp_xianzhi=0; // 重置坡道限制
             ramp_once_time=0; // 重置坡道标志位单次触发
             circle_once_time=0; // 重置环岛标志位单次触发
+            zebra_count_total=0; // 重置斑马线计数
         }
     }
     else

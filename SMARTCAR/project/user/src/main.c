@@ -64,7 +64,7 @@
 
 uint32 system_count;//系统计数器
 uint32 image_count;//图像采样计数器
-uint8 data_buffer[32];//无线转串口数据缓冲区
+uint8 data_buffer[100];//无线转串口数据缓冲区
 
 int main(void)
 {
@@ -145,11 +145,14 @@ int main(void)
                 ramp_xianzhi=0;//重置坡道计时器
                 ramp_once_time=0;//重置坡道单次保护
                 circle_once_time=0;//重置环岛单次保护
+                zebra_count_total=0;//重置斑马线计数
             }
             // sprintf(data_buffer,"%d\r\n",right_circle_flag);
             // wireless_uart_send_string(data_buffer);//发送右圆环状态
             // sprintf(data_buffer,"%d\r\n",encoder_sum);
             // wireless_uart_send_string(data_buffer);//发送编码器计数
+            // sprintf(data_buffer,"%d,%d,%d,%d,%d,%d,%d,%d,%d,\r\n",continuity_left_change_flag,continuity_right_change_flag,left_lost_count,right_lost_count,left_right_lost_count,boundary_start_left,boundary_start_right,search_stop_line,right_down_point);
+            // wireless_uart_send_string(data_buffer);
         }
         // printf("%5d,%5d,%5d\r\n", imu660ra_gyro_x, imu660ra_gyro_y, imu660ra_gyro_z);
         beep_cycle();

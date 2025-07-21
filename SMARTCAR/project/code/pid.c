@@ -196,7 +196,7 @@ void speed_pid_loacation(void)
     }
     else if(right_circle_flag||ramp_down_flag||ramp_protect)
     {
-        speed_pid_out=-PID_location(user_param.target_speed-up_speed*5.5,(encoder_data_right+encoder_data_left)/2,speed_pid_pin);
+        speed_pid_out=-PID_location(user_param.target_speed-up_speed*6.5,(encoder_data_right+encoder_data_left)/2,speed_pid_pin);
     }
     else if(ramp_up_flag)
     {
