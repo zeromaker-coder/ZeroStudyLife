@@ -130,6 +130,7 @@ int main(void)
         else
         {
             ramp_xianzhi++;//坡道计时器
+            circle_xianzhi++;//环岛计时器
             if(KEY_SHORT_PRESS==key_get_state(KEY_1)/*||image_out_of_bounds(mt9v03x_image)*/||zebra_count_total>=2)//按键1短按
             {
                 car_go=0;//停止
@@ -181,7 +182,10 @@ void pit_handler(void)
     if(system_count%20==0)
     {
         encoder_read();//编码器读取
-        motor_speed_protection();//电机速度保护
+        if(!ramp_flag)
+        {
+            motor_speed_protection();//电机速度保护
+        }
         speed_pid_loacation();//速度环
     }
 }

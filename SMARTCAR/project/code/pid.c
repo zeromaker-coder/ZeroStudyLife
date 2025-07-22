@@ -6,7 +6,7 @@
 #include "flash.h"
 
 #define up_speed 20
-#define up_angle 500
+#define up_angle 800
 
 //定义结构体
 PID_LocTypeDef gyro_pid_param;//角速度环结构体
@@ -200,7 +200,7 @@ void speed_pid_loacation(void)
     }
     else if(ramp_up_flag)
     {
-        speed_pid_out=-PID_location(user_param.target_speed+up_speed*11,(encoder_data_right+encoder_data_left)/2,speed_pid_pin);
+        speed_pid_out=-PID_location(user_param.target_speed+up_speed*12,(encoder_data_right+encoder_data_left)/2,speed_pid_pin);
     }
     else
     {

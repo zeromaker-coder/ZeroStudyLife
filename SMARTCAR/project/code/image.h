@@ -44,6 +44,24 @@ uint8 straight_judge(void);
 
 void zebra_judge_multi(void);
 
+void obstacle_detect(void);
+
+void obstacle_detect_process(void);
+
+void obstacle_detect_entry(int row, float current_width, float standard_width);
+
+void obstacle_detect_narrow(int row, float current_width, float standard_width);
+
+void obstacle_avoid_process(void);
+
+void obstacle_return_process(int row, float current_width, float standard_width);
+
+uint8 get_obstacle_state(void);
+
+uint8 get_obstacle_direction(void);
+
+void reset_obstacle_detect(void);
+
 extern uint8 left_down_point;
 
 extern uint8 left_up_point;
@@ -115,5 +133,7 @@ extern uint8 circle_once_time;
 extern uint8 circle_flag;
 
 extern const unsigned char Image_Flags[9*32];
+
+extern int16 circle_xianzhi;
 
 #endif

@@ -89,20 +89,38 @@ uint8 right_up_point;//右上拐点
 //元素标志位
 uint8 cross_flag;//十字标志位
 uint8 circle_flag; //环岛标志位
+
 uint8 circle_once_time=0; //环岛标志位单次触发
 uint8 ramp_once_time=0; //坡道标志位单次触发
 uint8 right_circle_flag; //右环岛标志
+
 uint8 straight_flag=0; //直线标志位
+
 uint8 ramp_flag=0; //坡道标志位
 uint8 ramp_up_flag = 0;           // 上坡标志
 uint8 ramp_top_flag = 0;          // 坡顶标志
 uint8 ramp_down_flag = 0;         // 下坡标
 uint8 ramp_protect = 0;           // 坡道保护标志志
+
 uint8 zebra_count_total = 0;      // 斑马线总计数
 uint8 zebra_detect_state = 0;     // 斑马线检测状态 0:未检测 1:检测中 2:已通过
 uint16 zebra_clear_timer = 0;     // 斑马线清除计时器
 uint8 zebra_last_flag = 0;        // 上次斑马线标志
 uint8 zebra_flag = 0;          // 斑马线标志位
+
+uint8 obstacle_state = 0;           // 路障状态 0:无 1:发现路障 2:避障中 3:回归中
+uint8 obstacle_step = 0;            // 路障处理步骤
+uint8 obstacle_counter1 = 0;        // 计数器1
+uint8 obstacle_counter2 = 0;        // 计数器2 
+uint8 obstacle_counter3 = 0;        // 计数器3
+uint8 track_narrow_count = 0;       // 赛道变窄计数
+uint8 obstacle_flag1 = 0;           // 路障标志1
+uint8 obstacle_flag2 = 0;           // 路障标志2
+uint8 obstacle_flag3 = 0;           // 路障标志3
+uint8 obstacle_direction = 0;       // 避障方向 1:左避障 2:右避障
+int32 obstacle_encoder_sum = 0;     // 路障编码器积分
+
+uint8 obstacle_flag = 0;                   // 路障总标志
 
 //右环岛处理中间变量
 uint8 continuity_left_change_flag=0;//左边连续变化标志
@@ -115,6 +133,7 @@ int16 encoder_sum;//圆环状态编码器计数
 
 //坡道相关变量
 int16 ramp_xianzhi=0; //坡道计时器
+int16 circle_xianzhi=0; //环岛计时器
 
 
 extern uint8 data_buffer[100];//无线转串口数据缓冲区
@@ -613,7 +632,7 @@ void longest_white_sweep_line(uint8 image[DEAL_IMAGE_H][DEAL_IMAGE_W])
         }
 
         if(left_lost_flag[i]==1&&right_lost_flag[i]==0)left_lost_count++;//左丢
-        if(left_lost_flag[i]==0&&right_lost_flag[i]==1)right_lost_count++;//右丢
+        if(left_lost_flag[i]==0&&right_lost_flag[i]==1)right_lost_count++;//�1��丢
         if(left_lost_flag[i]==1&&right_lost_flag[i]==1)left_right_lost_count++;//丢双边
     }
 
@@ -622,13 +641,17 @@ void longest_white_sweep_line(uint8 image[DEAL_IMAGE_H][DEAL_IMAGE_W])
         zebra_judge_multi();//判断斑马线
     }
 
-    // if(ramp_xianzhi>50&&!ramp_once_time)
-    // {
-    //     ramp_judge();//判断坡道
-    // }
+    if(ramp_xianzhi>100&&!ramp_once_time)
+    {
+        ramp_judge();//判断坡道
+    }
     
-
-    circle_judge();//判断环岛
+    // obstacle_detect();//路障检测
+    
+    if(circle_once_time&& circle_xianzhi>250)
+    {
+        circle_judge();//判断环岛
+    }
 
 
     cross_judge();//判断十字
@@ -1604,7 +1627,7 @@ void circle_judge(void)
     left_change_line=0;//左边突变点
     right_change_line=0;//右边突变点
 
-    if(cross_flag==0)//避开十字
+    if(cross_flag==0&&obstacle_flag==0)//避开十字
     {
         continuity_left_change_flag=left_countinuity_detect(DEAL_IMAGE_H-1-60,15);//判断左边连续性
         continuity_right_change_flag=right_countinuity_detect(DEAL_IMAGE_H-1-15,15);//判断右边连续性
@@ -1647,7 +1670,7 @@ void circle_judge(void)
             if(right_circle_flag==1)
             {    
                 road_wide_draw_right_line();//右边道宽补线
-                if(right_change_line>36&&right_up_point)//右边突点坐标过大并且有右上拐点
+                if(right_change_line>35&&right_up_point)//右边突点坐标过大并且有右上拐点
                 {
                     right_circle_flag=2;//右圆环标志置2
                     if(car_go)
@@ -1945,8 +1968,8 @@ void ramp_judge(void)
         }
         
         // 斜率检测
-        if (judge_time >= 1 && left_slope > -1.3 && left_slope < 0 && 
-            right_slope > 0 && right_slope < 1.3)
+        if (judge_time >= 1 && left_slope > -0.9 && left_slope < 0 && 
+            right_slope > 0 && right_slope < 0.9)
         {
             ramp_up_flag = 1;
             ramp_flag = 1;
@@ -2026,6 +2049,287 @@ void ramp_judge(void)
     {
         ramp_flag = 1;
     }
+}
+
+
+/**
+*
+* @brief  路障识别函数
+**/
+void obstacle_detect(void)
+{
+    // 只在直道且无其他元素时检测路障
+    if(circle_flag || cross_flag || ramp_flag || zebra_flag)
+    {
+        return;  // 有其他元素时不检测路障
+    }
+    
+    // 基本条件检查：视野足够远，边界完整
+    if(search_stop_line <110 || 
+       left_lost_count > 15 || right_lost_count > 15 || 
+       left_right_lost_count > 15)
+    {
+        return;  // 条件不满足，不检测路障
+    }
+    
+    // 检测赛道是否为直道状态
+    if(!(boundary_start_left <= DEAL_IMAGE_H - 15 && 
+         boundary_start_right <= DEAL_IMAGE_H - 15 && 
+         abs(line_err) > 15))
+    {
+        return;  // 不是直道，不检测路障
+    }
+    
+    obstacle_detect_process();
+}
+
+/**
+*
+* @brief  路障识别处理函数
+**/
+void obstacle_detect_process(void)
+{
+    // 遍历图像检测赛道宽度变化
+    for(int i = DEAL_IMAGE_H - 3; i > DEAL_IMAGE_H - search_stop_line + 10; i--)
+    {
+        // 检查当前行是否有有效的标准宽度
+        if(road_wide[i] == 0 || i < 20)
+        {
+            continue;
+        }
+        
+        // 检查边界是否正常
+        if(left_line[i] < 10 || right_line[i] > DEAL_IMAGE_W - 10)
+        {
+            continue;
+        }
+        
+        float current_width = real_road_wide[i];  // 当前赛道宽度
+        float standard_width = road_wide[i];  // 标准赛道宽度
+        
+        // 状态机处理路障识别
+        switch(obstacle_state)
+        {
+            case 0:  // 无路障状态
+                obstacle_detect_entry(i, current_width, standard_width);
+                break;
+                
+            case 1:  // 发现路障状态
+                obstacle_detect_narrow(i, current_width, standard_width);
+                break;
+                
+            case 2:  // 避障中状态
+                obstacle_avoid_process();
+                break;
+                
+            case 3:  // 回归中状态
+                obstacle_return_process(i, current_width, standard_width);
+                break;
+        }
+        
+        if(obstacle_state > 0)  // 如果检测到路障，跳出循环
+        {
+            break;
+        }
+    }
+    
+    // 设置路障标志
+    obstacle_flag = (obstacle_state > 0) ? 1 : 0;
+}
+
+/**
+*
+* @brief  路障入口检测
+**/
+void obstacle_detect_entry(int row, float current_width, float standard_width)
+{
+    // 检测赛道宽度正常（作为基准）
+    if(current_width >= standard_width * 0.85f)
+    {
+        obstacle_flag1 = 1;
+        obstacle_counter1++;
+        
+        if(obstacle_counter1 >= 15)  // 连续15行宽度正常
+        {
+            obstacle_state = 1;  // 进入发现路障状态
+            obstacle_counter1 = 0;      
+        }
+    }
+    else
+    {
+        obstacle_flag1 = 0;
+        obstacle_counter1 = 0;
+    }
+    if(car_go)
+    {
+        beep_on();  // 蜂鸣器提示
+    }
+}
+
+/**
+*
+* @brief  路障变窄检测
+**/
+void obstacle_detect_narrow(int row, float current_width, float standard_width)
+{
+    // 检测赛道宽度骤减
+    if(current_width <= standard_width * 0.9f)
+    {
+        obstacle_flag2 = 1;
+        track_narrow_count++;
+        
+        if(track_narrow_count >= 10)  // 连续10行宽度变窄（路障长度）
+        {
+            obstacle_state = 2;  // 进入避障状态
+            obstacle_step = 1;
+            track_narrow_count = 0;
+            obstacle_encoder_sum = 0;
+
+            continuity_left_change_flag=left_countinuity_detect(DEAL_IMAGE_H-1-20,15);//判断左边连续性
+            continuity_right_change_flag=right_countinuity_detect(DEAL_IMAGE_H-1-20,15);//判断右边连续性
+
+            // 判断避障方向（根据边界特征）
+            if(continuity_right_change_flag)
+            {
+                obstacle_direction = 1;  // 左避障
+            }
+            else if(continuity_left_change_flag)
+            {
+                obstacle_direction = 2;  // 右避障
+            }
+            
+            if(car_go)
+            {
+                beep_on();  // 蜂鸣器提示
+            }
+        }
+    }
+    else if(current_width >= standard_width * 0.95f && obstacle_step == 0)
+    {
+        obstacle_flag2 = 0;
+        track_narrow_count = 0;
+    }
+}
+
+/**
+*
+* @brief  避障处理
+**/
+void obstacle_avoid_process(void)
+{
+    // 根据方向进行避障补线
+    if(obstacle_direction == 1)  // 左避障
+    {
+        // 左边界向外扩展避障
+        for(int i = DEAL_IMAGE_H - 1; i >= DEAL_IMAGE_H - search_stop_line; i--)
+        {
+            if(left_line[i] > 20)
+            {
+                left_line[i] -= 15;  // 向左偏移避障
+            }
+            else
+            {
+                left_line[i] = 5;
+            }
+        }
+    }
+    else  // 右避障
+    {
+        // 右边界向外扩展避障
+        for(int i = DEAL_IMAGE_H - 1; i >= DEAL_IMAGE_H - search_stop_line; i--)
+        {
+            if(right_line[i] < DEAL_IMAGE_W - 20)
+            {
+                right_line[i] += 15;  // 向右偏移避障
+            }
+            else
+            {
+                right_line[i] = DEAL_IMAGE_W - 5;
+            }
+        }
+    }
+    
+    // 检测是否完成避障
+    obstacle_encoder_sum += abs(encoder_data_left) + abs(encoder_data_right);
+    
+    if(obstacle_encoder_sum > 14000 || search_stop_line > 110)  // 编码器积分足够或视野变好
+    {
+        obstacle_state = 3;  // 进入回归状态
+        obstacle_encoder_sum = 0;
+        
+        if(car_go)
+        {
+            beep_on();  // 蜂鸣器提示
+        }
+    }
+}
+
+/**
+*
+* @brief  回归正常赛道
+**/
+void obstacle_return_process(int row, float current_width, float standard_width)
+{
+    // 检测赛道宽度恢复正常
+    if(current_width >= standard_width * 0.95f)
+    {
+        obstacle_counter3++;
+        obstacle_flag3 = 1;
+        
+        if(obstacle_counter3 >= 8)  // 连续8行宽度正常
+        { 
+            reset_obstacle_detect();  // 重置路障状态   
+            if(car_go)
+            {
+                beep_on();  // 蜂鸣器提示
+            }
+        }
+    }
+    else
+    {
+        obstacle_counter3 = 0;
+        obstacle_flag3 = 0;
+    }
+}
+
+/**
+*
+* @brief  获取路障状态
+* @retval 路障状态
+**/
+uint8 get_obstacle_state(void)
+{
+    return obstacle_state;
+}
+
+/**
+*
+* @brief  获取避障方向
+* @retval 避障方向 1:左避障 2:右避障
+**/
+uint8 get_obstacle_direction(void)
+{
+    return obstacle_direction;
+}
+
+/**
+*
+* @brief  重置路障识别
+**/
+void reset_obstacle_detect(void)
+{
+    obstacle_state = 0;
+    obstacle_step = 0;
+    obstacle_counter1 = 0;
+    obstacle_counter2 = 0;
+    obstacle_counter3 = 0;
+    track_narrow_count = 0;
+    obstacle_flag1 = 0;
+    obstacle_flag2 = 0;
+    obstacle_flag3 = 0;
+    obstacle_direction = 0;
+    obstacle_encoder_sum = 0;
+    obstacle_flag = 0;
 }
 
 
