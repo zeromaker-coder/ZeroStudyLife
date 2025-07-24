@@ -632,7 +632,7 @@ void longest_white_sweep_line(uint8 image[DEAL_IMAGE_H][DEAL_IMAGE_W])
         }
 
         if(left_lost_flag[i]==1&&right_lost_flag[i]==0)left_lost_count++;//左丢
-        if(left_lost_flag[i]==0&&right_lost_flag[i]==1)right_lost_count++;//�1��丢
+        if(left_lost_flag[i]==0&&right_lost_flag[i]==1)right_lost_count++;//�1��丢
         if(left_lost_flag[i]==1&&right_lost_flag[i]==1)left_right_lost_count++;//丢双边
     }
 
@@ -648,10 +648,10 @@ void longest_white_sweep_line(uint8 image[DEAL_IMAGE_H][DEAL_IMAGE_W])
     
     // obstacle_detect();//路障检测
     
-    if(circle_once_time&& circle_xianzhi>250)
-    {
-        circle_judge();//判断环岛
-    }
+    // if(circle_once_time&& circle_xianzhi>250)
+    // {
+    //     circle_judge();//判断环岛
+    // }
 
 
     cross_judge();//判断十字
@@ -1952,8 +1952,8 @@ void ramp_judge(void)
         left_variance >= 0 && left_variance < 120)
     {
         // 检查赛道宽度特征
-        if (real_road_wide[40] >= road_wide[40] && real_road_wide[45] >= road_wide[45] && 
-            real_road_wide[50] >= road_wide[50] && real_road_wide[55] >= road_wide[55] && 
+        if (real_road_wide[40] >= road_wide[40]-8 && real_road_wide[45] >= road_wide[45]-8 && 
+            real_road_wide[50] >= road_wide[50]-8 && real_road_wide[55] >= road_wide[55]-8 && 
             search_stop_line > 80 && 
             !(left_line[50] < (DEAL_IMAGE_W - 3) && right_line[50] > 0))
         {
@@ -1968,8 +1968,8 @@ void ramp_judge(void)
         }
         
         // 斜率检测
-        if (judge_time >= 1 && left_slope > -0.9 && left_slope < 0 && 
-            right_slope > 0 && right_slope < 0.9)
+        if (judge_time >= 1 && left_slope > -0.8 && left_slope < 0 && 
+            right_slope > 0 && right_slope < 0.8)
         {
             ramp_up_flag = 1;
             ramp_flag = 1;
