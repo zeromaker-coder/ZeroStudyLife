@@ -182,7 +182,7 @@ void pit_handler(void)
     if(system_count%20==0)
     {
         encoder_read();//编码器读取
-        if(!ramp_flag)
+        if(!ramp_flag&&!ramp_once_time)
         {
             motor_speed_protection();//电机速度保护
         }

@@ -632,7 +632,7 @@ void longest_white_sweep_line(uint8 image[DEAL_IMAGE_H][DEAL_IMAGE_W])
         }
 
         if(left_lost_flag[i]==1&&right_lost_flag[i]==0)left_lost_count++;//左丢
-        if(left_lost_flag[i]==0&&right_lost_flag[i]==1)right_lost_count++;//�1��丢
+        if(left_lost_flag[i]==0&&right_lost_flag[i]==1)right_lost_count++;//右边丢
         if(left_lost_flag[i]==1&&right_lost_flag[i]==1)left_right_lost_count++;//丢双边
     }
 
@@ -641,7 +641,7 @@ void longest_white_sweep_line(uint8 image[DEAL_IMAGE_H][DEAL_IMAGE_W])
         zebra_judge_multi();//判断斑马线
     }
 
-    if(ramp_xianzhi>100&&!ramp_once_time)
+    if(ramp_xianzhi>120&&!ramp_once_time)
     {
         ramp_judge();//判断坡道
     }
@@ -664,6 +664,7 @@ void longest_white_sweep_line(uint8 image[DEAL_IMAGE_H][DEAL_IMAGE_W])
     {
         straight_flag=0;//不是直线
     }
+
 
 
     for(i = DEAL_IMAGE_H-1;i>=DEAL_IMAGE_H-search_stop_line&&i>=0;i--)
@@ -1797,7 +1798,7 @@ uint8 calculate_line_continuity(uint8 side, uint8 start_row, uint8 end_row)
             diff = abs(right_line[i] - right_line[i + 1]);
         }
         
-        if (diff <= 3)  // 连续性阈值
+        if (diff <= 2)  // 连续性阈值
         {
             current_continuity++;
         }
@@ -1952,8 +1953,8 @@ void ramp_judge(void)
         left_variance >= 0 && left_variance < 120)
     {
         // 检查赛道宽度特征
-        if (real_road_wide[40] >= road_wide[40]-8 && real_road_wide[45] >= road_wide[45]-8 && 
-            real_road_wide[50] >= road_wide[50]-8 && real_road_wide[55] >= road_wide[55]-8 && 
+        if (real_road_wide[40] >= road_wide[40]-10 && real_road_wide[45] >= road_wide[45]-10 && 
+            real_road_wide[50] >= road_wide[50]-10 && real_road_wide[55] >= road_wide[55]-10&& 
             search_stop_line > 80 && 
             !(left_line[50] < (DEAL_IMAGE_W - 3) && right_line[50] > 0))
         {
@@ -1968,12 +1969,14 @@ void ramp_judge(void)
         }
         
         // 斜率检测
-        if (judge_time >= 1 && left_slope > -0.8 && left_slope < 0 && 
-            right_slope > 0 && right_slope < 0.8)
+        if (judge_time >= 1 && left_slope > -1.0 && left_slope < 0 && 
+            right_slope > 0 && right_slope < 1.0)
         {
             ramp_up_flag = 1;
             ramp_flag = 1;
             ramp_timer = 0;
+            err_start_point = user_param.err_start + 30;  // 误差起始点
+            err_end_point = user_param.err_end + 30;      // 误差终点 
             
             if(car_go)
             {
@@ -1984,12 +1987,12 @@ void ramp_judge(void)
     
     // 坡顶检测
     if (ramp_flag == 1 && ramp_up_flag == 1 && 
-        left_continuity > 105 && right_continuity > 105)
+        left_continuity > 13 && right_continuity > 13)
     {
         ramp_up_flag = 0;
         ramp_top_flag = 1;
         ramp_timer = 0;
-        encoder_sum = 0;  // 清零编码器积分
+        encoder_sum = 0;  // 清零编码器积分      
         if(car_go)
         {
             beep_on();  // 蜂鸣器提示
@@ -2007,6 +2010,9 @@ void ramp_judge(void)
         ramp_top_flag = 0;
         ramp_down_flag = 1;
         ramp_timer = 0;
+
+        err_end_point = user_param.err_end;  // 误差终点
+        err_start_point = user_param.err_start;  // 误差起
         
         if(car_go)
         {
