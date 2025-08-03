@@ -5,8 +5,8 @@
 #include "math.h"
 #include "flash.h"
 
-#define up_speed 150
-#define up_angle 230
+#define up_speed 0
+#define up_angle 0
 
 //定义结构体
 PID_LocTypeDef gyro_pid_param;//角速度环结构体
@@ -56,6 +56,26 @@ void pid_init(void)
     turn_pid_param.ek=0.0;
     turn_pid_param.ek1=0.0;
     turn_pid_param.location_sum=0.0;
+    // gyro_pid_param.kp=1.799;
+    // gyro_pid_param.ki=0.009;
+    // angle_pid_param.kp=3.5;
+    // angle_pid_param.kd=0.450;
+    // speed_pid_param.kp=0.860;
+    // speed_pid_param.ki=0.000;
+    // turn_pid_param.kp=45;
+    // turn_pid_param.kp2=0.200;
+    // turn_pid_param.kd=30.000;
+    // turn_pid_param.kd2=0.920;
+    // user_param.mid_angle=4020; //中间角度
+    // user_param.target_speed=800; //目标速度
+    // gyro_pid_param.PID_I_LIMIT_MAX=2000.0; //角速度环积分限幅
+    // gyro_pid_param.PID_OUT_LIMIT_MAX=5000.0; //角速度环输出限幅
+    // angle_pid_param.PID_OUT_LIMIT_MAX=8000.0; //角度环积分限幅
+    // speed_pid_param.PID_I_LIMIT_MAX=1200.0; //速度环积分限幅
+    // speed_pid_param.PID_OUT_LIMIT_MAX=2000.0; //速度环输出限幅
+    // turn_pid_param.PID_OUT_LIMIT_MAX=1500.0; //转向环积分限幅
+    // user_param.err_start=45; //误差起点
+    // user_param.err_end=50; //误差终点
     err_start_point=user_param.err_start; //误差起点
     err_end_point=user_param.err_end; //误差终点
 }

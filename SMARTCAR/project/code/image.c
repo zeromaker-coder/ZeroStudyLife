@@ -641,10 +641,10 @@ void longest_white_sweep_line(uint8 image[DEAL_IMAGE_H][DEAL_IMAGE_W])
         zebra_judge_multi();//判断斑马线
     }
 
-    if(ramp_xianzhi>120&&!ramp_once_time)
-    {
-        ramp_judge();//判断坡道
-    }
+    // if(ramp_xianzhi>120&&!ramp_once_time)
+    // {
+    //     ramp_judge();//判断坡道
+    // }
     
     // obstacle_detect();//路障检测
     
@@ -1953,8 +1953,8 @@ void ramp_judge(void)
         left_variance >= 0 && left_variance < 120)
     {
         // 检查赛道宽度特征
-        if (real_road_wide[40] >= road_wide[40]-10 && real_road_wide[45] >= road_wide[45]-10 && 
-            real_road_wide[50] >= road_wide[50]-10 && real_road_wide[55] >= road_wide[55]-10&& 
+        if (real_road_wide[40] >= road_wide[40]-12 && real_road_wide[45] >= road_wide[45]-12 && 
+            real_road_wide[50] >= road_wide[50]-12 && real_road_wide[55] >= road_wide[55]-12&& 
             search_stop_line > 80 && 
             !(left_line[50] < (DEAL_IMAGE_W - 3) && right_line[50] > 0))
         {
@@ -1969,8 +1969,8 @@ void ramp_judge(void)
         }
         
         // 斜率检测
-        if (judge_time >= 1 && left_slope > -1.0 && left_slope < 0 && 
-            right_slope > 0 && right_slope < 1.0)
+        if (judge_time >= 1 && left_slope > -0.8 && left_slope < 0 && 
+            right_slope > 0 && right_slope < 0.8)
         {
             ramp_up_flag = 1;
             ramp_flag = 1;

@@ -24,6 +24,8 @@ void image_menu(void);
 
 void circle_param(void);
 
+// void linked_menu_init(void);
+
 extern uint8 car_go;
 
 extern uint8 main_menu_item;

@@ -50,6 +50,7 @@
 #include "pid.h"
 #include "motor.h"
 
+
 //指示灯以及蜂鸣器
 #define BEEP                    (D7 )       // 蜂鸣器接口
 
@@ -72,6 +73,7 @@ int main(void)
     clock_init(SYSTEM_CLOCK_120M);                                              // 初始化芯片时钟 工作频率为 120MHz
     debug_init();                                                               // 初始化默认 Debug UART
 
+
     menu_init();//菜单初始化
     pid_init();//PID初始化
     image_init();//图像采样初始化
@@ -80,6 +82,7 @@ int main(void)
     imu_init();//IMU初始化
     wireless_uart_init();//无线转串口初始化
     boundary_line_init();//边界线初始化
+    // linked_menu_init();//链表菜单初始化
 
     
     ips200_show_rgb565_image(0, 120, (const uint16 *)Image_Flags, 32, 9, 240, 80, 0);        // 显示一个RGB565色彩图片 原图240*80 显示240*80 低位在前
@@ -95,6 +98,7 @@ int main(void)
     //设置中断优先级，0为最高
     interrupt_set_priority(PIT_PRIORITY,0);
     interrupt_set_priority(menu_imu_PIT_PRIORITY,0);
+
     
     // gpio_set_level(BEEP, GPIO_HIGH);                                            // BEEP 响
     // system_delay_ms(100);
@@ -157,6 +161,7 @@ int main(void)
         }
         // printf("%5d,%5d,%5d\r\n", imu660ra_gyro_x, imu660ra_gyro_y, imu660ra_gyro_z);
         beep_cycle();
+        //motor_set_duty(1500,1500);//电机输出
     }
 }
 // **************************** 代码区域 ****************************
